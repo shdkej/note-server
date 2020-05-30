@@ -6,36 +6,29 @@ import (
 )
 
 var _ = Describe("Running Dynamodb", func() {
-	Context("test ping", func() {
-		conn := Dynamodb{}
-		It("pong", func() {
-			Expect(conn.initDB()).Should(BeNil())
-		})
-	})
-
 	Context("Test CRUD", func() {
 		conn := Dynamodb{}
 		tableName := "myBlog"
-		item := Item{
-			Year:   2013,
-			Title:  "The Monster",
-			Plot:   "BONG",
-			Rating: 5.0,
+		tag := Tag{
+			FileName:    egeg,
+			FileContent: "0",
+			Tag:         tag,
+			TagLine:     tagline[1],
 		}
 		It("Init", func() {
-			Expect(conn.initDB()).Should(BeNil())
+			Expect(conn.Init()).Should(BeNil())
 		})
 		It("Get Table", func() {
 			Expect(conn.getTable()).Should(Equal(tableName))
 		})
 		It("Create Item", func() {
-			Expect(conn.putItem(tableName, item)).Should(BeNil())
+			Expect(conn.put(tableName, tag)).Should(BeNil())
 		})
 		It("Get Item", func() {
-			Expect(conn.getItem(tableName, item.Title, "5.0")).Should(Equal(item))
+			Expect(conn.get(tableName, tag.Tag)).Should(Equal(tag))
 		})
 		It("Delete Item", func() {
-			Expect(conn.deleteItem(tableName, item)).Should(BeNil())
+			Expect(conn.deleteItem(tableName, tag)).Should(BeNil())
 		})
 		//It("Load Json", func() {
 		//	Expect(conn.loadData(tableName, "moviedata.json")).Should(BeNil())

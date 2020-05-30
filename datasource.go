@@ -1,21 +1,24 @@
 package main
 
 type Tag struct {
-	fileName    string
-	fileContent string
-	tag         string
-	tagLine     string
+	FileName    string
+	FileContent string
+	Tag         string
+	TagLine     string
 }
 
-type datasource interface {
+type DataSource interface {
+	Init() error
+	ping() error
+	hits(string) (int64, error)
 	get(string) (string, error)
 	set(string, string) error
-	getStruct() (Article, error)
-	setStruct() error
 	append(string, string) error
+	getStruct(string) (Tag, error)
+	setStruct(Tag) error
 	getSet(string) ([]string, error)
 	pushSet(string, string) error
 	getAllKey(string) ([]string, error)
-	getTagParagraph(string) (string, error)
+	getTagParagraph(string) ([]string, error)
 	putTags() error
 }
