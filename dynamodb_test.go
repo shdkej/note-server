@@ -10,10 +10,10 @@ var _ = Describe("Running Dynamodb", func() {
 		conn := Dynamodb{}
 		tableName := "myBlog"
 		tag := Tag{
-			FileName:    egeg,
+			FileName:    "main.md",
 			FileContent: "0",
-			Tag:         tag,
-			TagLine:     tagline[1],
+			Tag:         "Good",
+			TagLine:     "Good Enough",
 		}
 		It("Init", func() {
 			Expect(conn.Init()).Should(BeNil())
