@@ -2,26 +2,25 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
-	"path/filepath"
 
 	"github.com/fatih/structs"
 	"github.com/go-redis/redis"
-	"github.com/russross/blackfriday/v2"
 )
 
 type Client struct {
 	redis *redis.Client
 }
 
-func (c *Client) NewClient() {
+func (c *Client) Init() error {
 	host := os.Getenv("REDIS_HOST")
 	c.redis = redis.NewClient(&redis.Options{
 		Addr:     host + ":6379",
 		Password: "",
 		DB:       0,
 	})
+
+	return nil
 }
 
 func (c *Client) ping() error {
@@ -35,35 +34,12 @@ func (c *Client) ping() error {
 }
 
 func (c *Client) setInitial() error {
-	dir := "/home/sh/vimwiki/"
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if filepath.Ext(path) != ".md" {
-			return nil
-		}
-		filename := path
-		val, err := ioutil.ReadFile(filename)
+	/*
+		err = c.putTags()
 		if err != nil {
 			return err
 		}
-		output := blackfriday.Run(val)
-		article := Article{
-			Title:    info.Name(),
-			Category: info.Name(),
-			Content:  string(output),
-		}
-		err = c.setStruct(article)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-	//err = c.putTags()
-	if err != nil {
-		return err
-	}
+	*/
 
 	return nil
 }
@@ -107,7 +83,7 @@ func (c *Client) get(keyword string) (string, error) {
 	return val, nil
 }
 
-func (c *Client) rpush(keyword string, value string) error {
+func (c *Client) pushSet(keyword string, value string) error {
 	err := c.redis.RPush(keyword, value).Err()
 	if err != nil {
 		return err
@@ -129,12 +105,12 @@ type Article struct {
 	Content  string `json:"content"`
 }
 
-func (c *Client) setStruct(article Article) error {
+func (c *Client) setStruct(article Tag) error {
 	const objectPrefix string = "article:"
 
 	articleM := structs.Map(article)
 
-	err := c.redis.HMSet(objectPrefix+article.Title, articleM).Err()
+	err := c.redis.HMSet(objectPrefix+article.Tag, articleM).Err()
 	if err != nil {
 		return err
 	}
@@ -142,7 +118,7 @@ func (c *Client) setStruct(article Article) error {
 	return nil
 }
 
-func (c *Client) getStruct(title string) (Article, error) {
+func (c *Client) getStruct(title string) (Tag, error) {
 	const objectPrefix string = "article:"
 
 	title = objectPrefix + title
@@ -150,22 +126,24 @@ func (c *Client) getStruct(title string) (Article, error) {
 	if err == redis.Nil {
 		fmt.Printf("Article does not exist")
 	} else if err != nil {
-		return Article{}, err
+		return Tag{}, err
 	}
 
-	arti := Article{}
+	tag := Tag{}
 	for key, value := range m {
 		switch key {
-		case "Title":
-			arti.Title = value
-		case "Category":
-			arti.Category = value
-		case "Content":
-			arti.Content = value
+		case "Tag":
+			tag.Tag = value
+		case "TagLine":
+			tag.TagLine = value
+		case "FileName":
+			tag.FileName = value
+		case "FileContent":
+			tag.FileContent = value
 		}
 	}
 
-	return arti, nil
+	return tag, nil
 }
 
 func (c *Client) getAllKey(tag string) ([]string, error) {
@@ -239,18 +217,19 @@ func (c *Client) putTags() error {
 	if err != nil {
 		return err
 	}
-	for _, tagline := range values {
-		//item := Item{
-		//	Year:    2020,
-		//	Title:   tag,
-		//	Content: tagline,
-		//	Rating:  0.0,
-		//}
+	for key, tagline := range values {
+		/*
+			tag := Tag{
+				FileName:    tagline[0],
+				FileContent: "0",
+				Tag:         key,
+				TagLine:     tagline[1],
+			}
+		*/
 		if len(tagline) == 0 {
 			continue
 		}
-		fmt.Printf("Title: %s", tagline)
-		//c.rpush(tag, tagline)
+		c.pushSet(key, tagline[0])
 	}
 	return nil
 }
