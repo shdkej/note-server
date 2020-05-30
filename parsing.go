@@ -146,7 +146,6 @@ func makeCSVForm(index int, key string, value []string) []string {
 }
 
 func toCSV(tags map[string][]string) error {
-	log.Println(tags)
 	file, err := os.OpenFile("tags.csv", os.O_RDWR, 0755)
 	if err != nil {
 		log.Fatal(err)
