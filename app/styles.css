@@ -1,0 +1,80 @@
+:root {
+    --main-color: black;
+    --second-color: white;
+    --heading-color: orange;
+    --link-color: #8ad7ee;
+}
+
+[data-theme="white"] {
+    --main-color: white;
+    --second-color: black;
+    --heading-color: salmon;
+}
+
+body {
+    background-color: var(--main-color, var(--second-color));
+    color: var(--second-color);
+    max-width: 900px;
+    margin: 1rem auto;
+    padding: 1rem;
+    font-size: 1rem;
+    font-family: ibm plex mono,monospace;
+}
+
+h1  { color: var(--heading-color); }
+p   { color: var(--second-color); }
+a   { color: var(--link-color); }
+
+/* NAVIGATOR */
+.active {
+    display: block !important;
+}
+
+.main-navbar {
+    position: absolute;
+    width: 25%;
+    max-height: 30vh;
+    top: 50%;
+    right: 0px;
+    text-align: center;
+}
+.square {
+    width: 50px;
+    height: 50px;
+    background-color: #4CAF50;
+    color: #FFFFFF;
+    font-size: 15px;
+    max-width: 250px;
+    max-height: 250px;
+    border-radius: 1vw;
+}
+.navbar-toggle {
+    display: none;
+}
+.mainSquare {
+    background-color: #FFFFFF;
+    color: #000000;
+}
+
+@media only screen and (max-width: 1100px) {
+    .main-navbar {
+        display: none;
+        position: absolute;
+        top: 10%;
+        right: 0px;
+        width: 100%;
+    }
+    .square {
+        width: 29vw;
+        height: 29vh;
+    }
+    .navbar-toggle {
+        display: block;
+        position: absolute;
+        top: 10px;
+        right: 20px;
+    }
+}
+
+@media (prefers-color-scheme: light) {
+}

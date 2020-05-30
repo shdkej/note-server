@@ -1,0 +1,100 @@
+<!doctype html>
+<!--
+Copyright 2018 The Go Authors. All rights reserved.
+Use of this source code is governed by a BSD-style
+license that can be found in the LICENSE file.
+-->
+<html>
+
+<head>
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Go wasm</title>
+</head>
+
+<body>
+	<!--
+	Add the following polyfill for Microsoft Edge 17/18 support:
+	<script src="https://cdn.jsdelivr.net/npm/text-encoding@0.7.0/lib/encoding.min.js"></script>
+	(see https://caniuse.com/#feat=textencoder)
+	-->
+	<script src="/wasm_exec.js"></script>
+	<script>
+		if (!WebAssembly.instantiateStreaming) { // polyfill
+			WebAssembly.instantiateStreaming = async (resp, importObject) => {
+				const source = await (await resp).arrayBuffer();
+				return await WebAssembly.instantiate(source, importObject);
+			};
+		}
+
+		const go = new Go();
+		let mod, inst;
+		WebAssembly.instantiateStreaming(fetch("main.wasm"),
+            go.importObject).then( async result => {
+			mod = result.module;
+			inst = result.instance;
+			await go.run(inst);
+		});
+	</script>
+
+    <nav class="navbar">
+    <a href="/">SH</a> |
+    <a href="/category">category</a> |
+    <a href="/random">random</a>
+    <br/>---
+    <span class="navbar-toggle" id="navbar-toggle">
+        <button onclick="toggleNavbar()">MENU</button>
+    </span>
+    <div id="go_wasm" class="main-navbar">
+        <div>
+        <button onClick="handleRect(1)" id="square1" class="square">strong base</button>
+        <button onClick="handleRect(2)" id="square2" class="square">2</button>
+        <button onClick="handleRect(3)" id="square3" class="square">3</button>
+        </div>
+        <div>
+        <button onClick="handleRect(4)" id="square4" class="square">4</button>
+        <button onClick="handleRect(5)" id="square" class="square mainSquare">x</button>
+        <button onClick="handleRect(6)" id="square6" class="square">5</button>
+        </div>
+        <div>
+        <button onClick="handleRect(7)" id="square7" class="square">6</button>
+        <button onClick="handleRect(8)" id="square8" class="square">7</button>
+        <button onClick="handleRect(9)" id="square9" class="square">8</button>
+        </div>
+    </div>
+    </nav>
+    <div id="input-area">
+        <label>Search: </label>
+        <input type="text" id="input1"/>
+        <button onClick="storeInput('input1')" id="toggle_input"/>toggle input</button>
+        <input type="checkbox" onClick="changetheme(event)" id="theme-switch"/>Toggle-Theme</button>
+    </div>
+    <div id="contents">
+        <article id="recent-article">
+            {{ .Content }}
+        </article>
+    </div>
+	<link rel="stylesheet" href="/styles.css">
+	<script>
+        const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
+        if (currentTheme) {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            if (currentTheme === 'dark') {
+                toggleSwitch.checked = true;
+            }
+        }
+        function changetheme(e){
+            if (e.target.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
+            else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+            }
+        }
+	</script>
+
+</body>
+
+</html>
