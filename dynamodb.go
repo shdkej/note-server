@@ -11,35 +11,12 @@ import (
 	"os"
 )
 
-type Item struct {
-	Year    int
-	Title   string
-	Plot    string
-	Rating  float64
-	Content string
-}
-
 type Dynamodb struct {
 	svc  *dynamodb.DynamoDB
-	item []Item
+	item []Tag
 }
 
-/*
-var wikiDir = "/home/sh/vimwiki"
-
-func main() {
-	conn := Dynamodb{}
-	conn.initDB()
-	tableName, err := conn.getTable()
-	conn.putTags(tableName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	conn.getItem(tableName, "#### 3/13", "0")
-}
-*/
-
-func (conn *Dynamodb) initDB() error {
+func (conn *Dynamodb) Init() error {
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))
@@ -72,8 +49,8 @@ func (conn *Dynamodb) getTable() (string, error) {
 	return tableName, nil
 }
 
-func (conn *Dynamodb) putItem(tableName string, item Item) error {
-	av, err := dynamodbattribute.MarshalMap(item)
+func (conn *Dynamodb) put(tableName string, tag Tag) error {
+	av, err := dynamodbattribute.MarshalMap(tag)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -87,19 +64,16 @@ func (conn *Dynamodb) putItem(tableName string, item Item) error {
 		log.Fatal(err)
 		return err
 	}
-	fmt.Println("Succeessfully added : " + item.Title)
+	fmt.Println("Succeessfully added : " + tag.Tag)
 	return nil
 }
 
-func (conn *Dynamodb) getItem(tableName string, key string, point string) Item {
+func (conn *Dynamodb) get(tableName string, key string) Tag {
 	result, err := conn.svc.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(tableName),
 		Key: map[string]*dynamodb.AttributeValue{
 			"Title": {
 				S: aws.String(key),
-			},
-			"Rating": {
-				N: aws.String(point),
 			},
 		},
 	})
@@ -107,26 +81,22 @@ func (conn *Dynamodb) getItem(tableName string, key string, point string) Item {
 		log.Fatal(err)
 	}
 
-	item := Item{}
+	item := Tag{}
 	err = dynamodbattribute.UnmarshalMap(result.Item, &item)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println("Get: ", item.Title)
+	log.Println("Get: ", item.Tag)
 
 	return item
 }
 
-func (conn *Dynamodb) deleteItem(tableName string, item Item) error {
-	rate := fmt.Sprintf("%f", item.Rating)
+func (conn *Dynamodb) deleteItem(tableName string, item Tag) error {
 	input := &dynamodb.DeleteItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"Title": {
-				S: aws.String(item.Title),
-			},
-			"Rating": {
-				N: aws.String(rate),
+			"Tag": {
+				S: aws.String(item.Tag),
 			},
 		},
 		TableName: aws.String(tableName),
@@ -136,7 +106,7 @@ func (conn *Dynamodb) deleteItem(tableName string, item Item) error {
 		log.Fatal(err)
 		return err
 	}
-	log.Println("Deleted : " + item.Title)
+	log.Println("Deleted : " + item.Tag)
 	return nil
 }
 
@@ -149,7 +119,7 @@ func (conn *Dynamodb) loadData(tableName string, filename string) error {
 		return err
 	}
 
-	var items []Item
+	var items []Tag
 	err = json.NewDecoder(jsonData).Decode(&items)
 	if err != nil {
 		log.Fatal(err)
@@ -184,19 +154,17 @@ func (conn *Dynamodb) putTags(tableName string) error {
 	if err != nil {
 		return err
 	}
-	for _, tagline := range values {
-		//item := Item{
-		//	Year:    2020,
-		//	Title:   tag,
-		//	Content: tagline,
-		//	Rating:  0.0,
-		//}
-		//fmt.Println("Title: ", tag, " Content: ", tagline)
+	for key, tagline := range values {
+		tag := Tag{
+			FileName:    tagline[0],
+			FileContent: "0",
+			Tag:         key,
+			TagLine:     tagline[1],
+		}
 		if len(tagline) == 0 {
 			continue
 		}
-		//fmt.Printf("Title: %s", tagline)
-		//conn.putItem(tableName, item)
+		conn.put(tableName, tag)
 	}
 	return nil
 }
