@@ -15,7 +15,7 @@ func TestRedis(t *testing.T) {
 
 var _ = Describe("Running Redis", func() {
 	pool := Client{}
-	pool.NewClient()
+	pool.Init()
 
 	Context("Test ping", func() {
 		It("pong", func() {
