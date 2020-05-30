@@ -1,0 +1,29 @@
+version: "2"
+services:
+    golang:
+        build: ./
+        volumes:
+            - ./:/src/
+            - /home/sh/vimwiki:/vimwiki
+        working_dir: /src
+        command: gin --appPort 8080 --all -i run server.go
+        environment:
+          - REDIS_HOST=redis
+          - VIMWIKI=/vimwiki
+        ports:
+          - 8080:8080
+        depends_on: 
+          - redis
+    redis:
+      image: redis:alpine
+      ports:
+        - 6379:6379
+    elasticsearch:
+      image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
+      container_name: elasticsearch
+      ports:
+        - 9200:9200
+      environment:
+        - discovery.type=single-node
+        - cluster.name=docker-cluster
+        - ES_JAVA_OPTS=-Xms1g -Xmx1g
