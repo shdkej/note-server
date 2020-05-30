@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -38,42 +37,43 @@ var _ = Describe("Running Redis", func() {
 	})
 
 	Context("Test sets", func() {
-		article := Article{
-			Title:    "test",
-			Category: "test@gmail.com",
-			Content:  "kim",
+		tag := Tag{
+			FileName:    "main.md",
+			FileContent: "0",
+			Tag:         "Good",
+			TagLine:     "Good Enough",
 		}
 
 		It("set sets", func() {
-			Expect(pool.setStruct(article)).Should(BeNil())
+			Expect(pool.setStruct(tag)).Should(BeNil())
 		})
 		It("get sets", func() {
-			Expect(pool.getStruct(article.Title)).Should(Equal(article))
+			Expect(pool.getStruct(tag.Tag)).Should(Equal(tag))
 		})
 		It("get sets empty", func() {
 			Expect(pool.getStruct("empty")).Should(Equal(Article{}))
 		})
 	})
 
-	Context("Test initial content", func() {
-		pool.setInitial()
-		//It("initial", func() {
-		//})
-		It("initial Dir", func() {
-			Expect(os.Getenv("VIMWIKI")).Should(Equal("/home/sh/vimwiki"))
+	/*
+		Context("Test initial content", func() {
+			pool.setInitial()
+			It("initial Dir", func() {
+				Expect(os.Getenv("VIMWIKI")).Should(Equal("/home/sh/vimwiki"))
+			})
+			article, err := pool.getStruct("2020-04-06-WEEK14.md")
+			It("get content1", func() {
+				Expect(article.Filename).Should(Equal("2020-04-06-WEEK14.md"))
+			})
+			It("error check", func() {
+				Expect(err).Should(BeNil())
+			})
+			It("get ##Need Component", func() {
+				Expect(pool.get("##Need Component")).NotTo(BeNil())
+			})
+			It("keys space bar test", func() {
+				Expect(pool.getTagParagraph("Need Component")).NotTo(BeNil())
+			})
 		})
-		article, err := pool.getStruct("2020-04-06-WEEK14.md")
-		It("get content1", func() {
-			Expect(article.Title).Should(Equal("2020-04-06-WEEK14.md"))
-		})
-		It("error check", func() {
-			Expect(err).Should(BeNil())
-		})
-		It("get ##Need Component", func() {
-			Expect(pool.get("##Need Component")).NotTo(BeNil())
-		})
-		It("keys space bar test", func() {
-			Expect(pool.getTagParagraph("Need Component")).NotTo(BeNil())
-		})
-	})
+	*/
 })
