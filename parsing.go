@@ -30,7 +30,7 @@ func getTagAll() (map[string][]string, error) {
 		}
 
 		var tag string
-		ss := strings.Split(string(val), "\n\n")
+		ss := strings.Split(string(val), "\n\n##")
 		for _, s := range ss {
 			tag = getTag(s)
 			if strings.HasPrefix(s, tagPrefix) {
@@ -60,33 +60,6 @@ func getTag(tagline string) string {
 	return tag[0]
 }
 
-func getTaglineAll() ([]string, error) {
-	result := []string{}
-	err := filepath.Walk(wikiDir, func(path string, info os.FileInfo, err error) error {
-		if filepath.Ext(path) != ".md" {
-			return nil
-		}
-		filename := path
-		val, err := ioutil.ReadFile(filename)
-		if err != nil {
-			return err
-		}
-
-		ss := strings.Split(string(val), "\n\n")
-		for _, s := range ss {
-			if strings.HasPrefix(s, tagPrefix) {
-				result = append(result, s)
-			}
-		}
-		return nil
-	})
-	if err != nil {
-		return result, err
-	}
-	log.Println("Get Tagline All Done")
-	return result, nil
-}
-
 func getFileAll() ([]os.FileInfo, error) {
 	files, err := ioutil.ReadDir(wikiDir)
 	if err != nil {
@@ -94,25 +67,6 @@ func getFileAll() ([]os.FileInfo, error) {
 		return make([]os.FileInfo, 0), err
 	}
 	return files, nil
-}
-
-func makeTagSet(filename string) (map[string][]string, error) {
-	result := make(map[string][]string)
-
-	val, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return result, err
-	}
-
-	var tag string
-	ss := strings.Split(string(val), "\n\n")
-	for _, s := range ss {
-		tag = getTag(s)
-		if strings.HasPrefix(s, tagPrefix) {
-			result[tag] = []string{filename, s}
-		}
-	}
-	return result, nil
 }
 
 func getRandom(arg interface{}) []int {
