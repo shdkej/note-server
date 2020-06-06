@@ -12,8 +12,9 @@ import (
 )
 
 type Dynamodb struct {
-	svc  *dynamodb.DynamoDB
-	item []Tag
+	svc       *dynamodb.DynamoDB
+	item      []Tag
+	TableName string
 }
 
 func (conn *Dynamodb) Init() error {
@@ -25,19 +26,20 @@ func (conn *Dynamodb) Init() error {
 	return nil
 }
 
-func (conn *Dynamodb) getTable() (string, error) {
+func (conn *Dynamodb) getTable() error {
 	input := &dynamodb.ListTablesInput{}
 	tableName := ""
 	for {
 		result, err := conn.svc.ListTables(input)
 		if err != nil {
 			log.Fatal(err)
-			return "error", err
+			return err
 		}
 		for _, n := range result.TableNames {
 			fmt.Println(*n)
 			tableName = *n
-			return tableName, nil
+			conn.TableName = tableName
+			return nil
 		}
 
 		input.ExclusiveStartTableName = result.LastEvaluatedTableName
@@ -46,17 +48,17 @@ func (conn *Dynamodb) getTable() (string, error) {
 		}
 	}
 
-	return tableName, nil
+	return nil
 }
 
-func (conn *Dynamodb) put(tableName string, tag Tag) error {
+func (conn *Dynamodb) put(tag Tag) error {
 	av, err := dynamodbattribute.MarshalMap(tag)
 	if err != nil {
 		log.Fatal(err)
 	}
 	input := &dynamodb.PutItemInput{
 		Item:      av,
-		TableName: aws.String(tableName),
+		TableName: aws.String(conn.TableName),
 	}
 
 	_, err = conn.svc.PutItem(input)
@@ -68,11 +70,11 @@ func (conn *Dynamodb) put(tableName string, tag Tag) error {
 	return nil
 }
 
-func (conn *Dynamodb) get(tableName string, key string) Tag {
+func (conn *Dynamodb) get(key string) Tag {
 	result, err := conn.svc.GetItem(&dynamodb.GetItemInput{
-		TableName: aws.String(tableName),
+		TableName: aws.String(conn.TableName),
 		Key: map[string]*dynamodb.AttributeValue{
-			"Title": {
+			"Tag": {
 				S: aws.String(key),
 			},
 		},
@@ -92,14 +94,14 @@ func (conn *Dynamodb) get(tableName string, key string) Tag {
 	return item
 }
 
-func (conn *Dynamodb) deleteItem(tableName string, item Tag) error {
+func (conn *Dynamodb) deleteItem(item Tag) error {
 	input := &dynamodb.DeleteItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"Tag": {
 				S: aws.String(item.Tag),
 			},
 		},
-		TableName: aws.String(tableName),
+		TableName: aws.String(conn.TableName),
 	}
 	_, err := conn.svc.DeleteItem(input)
 	if err != nil {
@@ -110,7 +112,7 @@ func (conn *Dynamodb) deleteItem(tableName string, item Tag) error {
 	return nil
 }
 
-func (conn *Dynamodb) loadData(tableName string, filename string) error {
+func (conn *Dynamodb) loadData(filename string) error {
 	jsonData, err := os.Open(filename)
 	defer jsonData.Close()
 	if err != nil {
@@ -135,7 +137,7 @@ func (conn *Dynamodb) loadData(tableName string, filename string) error {
 		}
 		input := &dynamodb.PutItemInput{
 			Item:      info,
-			TableName: aws.String(tableName),
+			TableName: aws.String(conn.TableName),
 		}
 
 		_, err = conn.svc.PutItem(input)
@@ -149,7 +151,7 @@ func (conn *Dynamodb) loadData(tableName string, filename string) error {
 	return nil
 }
 
-func (conn *Dynamodb) putTags(tableName string) error {
+func (conn *Dynamodb) putTags() error {
 	values, err := getTagAll()
 	if err != nil {
 		return err
@@ -164,7 +166,7 @@ func (conn *Dynamodb) putTags(tableName string) error {
 		if len(tagline) == 0 {
 			continue
 		}
-		conn.put(tableName, tag)
+		conn.put(tag)
 	}
 	return nil
 }

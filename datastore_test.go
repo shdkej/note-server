@@ -51,7 +51,7 @@ var _ = Describe("Running Redis", func() {
 			Expect(pool.getStruct(tag.Tag)).Should(Equal(tag))
 		})
 		It("get sets empty", func() {
-			Expect(pool.getStruct("empty")).Should(Equal(Article{}))
+			Expect(pool.getStruct("empty")).Should(Equal(Tag{}))
 		})
 	})
 

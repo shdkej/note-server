@@ -18,17 +18,10 @@ var _ = Describe("Parsing file", func() {
 		})
 	})
 	Context("Test Parsing", func() {
-		taglines, err := getTaglineAll()
+		taglines, err := getTagAll()
 		It("get tagline all", func() {
-			Expect(taglines[0]).NotTo(BeNil())
+			Expect(taglines).NotTo(BeNil())
 			Expect(err).Should(BeNil())
 		})
-		/*
-			filename := "/home/sh/vimwiki/Architecture.md"
-			result, _ := makeTagSet(filename)
-			It("get tagline set", func() {
-				Expect(result).NotTo(BeNil())
-			})
-		*/
 	})
 })
