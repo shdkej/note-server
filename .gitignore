@@ -1,5 +1,4 @@
 *.pem
 *.srt
 *.key
-*.csv
 vendor
