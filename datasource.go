@@ -7,6 +7,10 @@ type Tag struct {
 	TagLine     string
 }
 
+type Database struct {
+	source DataSource
+}
+
 type DataSource interface {
 	Init() error
 	ping() error
