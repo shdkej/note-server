@@ -22,14 +22,15 @@ var (
 
 var wikiDir = os.Getenv("VIMWIKI")
 
-var c DataSource
-
 func main() {
 	flag.Parse()
 
 	// Redis, Dynamodb, File
-	c = &Client{}
+	c := &Client{}
 	c.Init()
+
+	//
+	db := Database{c}
 
 	err := c.ping()
 	if err != nil {
@@ -37,10 +38,11 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/category", CategoryHandler)
-	r.HandleFunc("/category/{key}", ArticleHandler)
-	r.HandleFunc("/tag", TagHandler)
-	r.HandleFunc("/tag/{key}", TagOneHandler)
+	r.HandleFunc("/category", db.CategoryHandler)
+	r.HandleFunc("/category/{key}", db.ArticleHandler)
+	r.HandleFunc("/tag", db.TagHandler)
+	r.HandleFunc("/tag/{key}", db.TagOneHandler)
+	r.HandleFunc("/random", db.TagHandler)
 
 	r.HandleFunc("/health", HealthCheckHandler)
 	r.HandleFunc("/test", HTTP2TestHandler)
@@ -52,26 +54,27 @@ func main() {
 	//log.Fatal(srv.ListenAndServe())
 }
 
-func CategoryHandler(w http.ResponseWriter, r *http.Request) {
+func (c Database) CategoryHandler(w http.ResponseWriter, r *http.Request) {
 	files, err := getFileAll()
 	var filename string
 	for _, file := range files {
 		filename += "<a href='/data/" + file.Name() + "'>" + file.Name() + "</a><br/> "
 	}
 	err = RenderOutput(w, filename)
+	c.source.get("test")
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func TagHandler(w http.ResponseWriter, r *http.Request) {
+func (c Database) TagHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	hits, err := c.hits(vars["key"])
+	hits, err := c.source.hits(vars["key"])
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	tags := getRandomContent()
+	tags := c.getRandomContent()
 	var taglines string
 	taglines += "<h1>Random</h1>"
 
@@ -92,14 +95,14 @@ func TagHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hits: %v\n <h1>Content Based</h1>%v", hits, string(val))
 }
 
-func TagOneHandler(w http.ResponseWriter, r *http.Request) {
+func (c Database) TagOneHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	hits, err := c.hits(vars["key"])
+	hits, err := c.source.hits(vars["key"])
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	content, err := c.getTagParagraph(vars["key"])
+	content, err := c.source.getTagParagraph(vars["key"])
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -108,7 +111,7 @@ func TagOneHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hits: %v\n", hits)
 }
 
-func ArticleHandler(w http.ResponseWriter, r *http.Request) {
+func (c Database) ArticleHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	w.WriteHeader(http.StatusOK)
 	filename := wikiDir + vars["key"] + ".md"
@@ -125,17 +128,19 @@ func ArticleHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Key: %v\n", vars["key"])
 }
 
-func getRandomContent() []string {
-	tags, err := getTaglineAll()
+func (c Database) getRandomContent() []string {
+	tags, err := c.source.getSet("## markdown")
 	if err != nil {
 		log.Fatal(err)
 	}
-	random := getRandom(len(tags))
-	var randomTags []string
-	for _, v := range random {
-		randomTags = append(randomTags, tags[v])
+
+	//random := getRandom(len(tags))
+
+	var randomtags []string
+	for _, v := range tags {
+		randomtags = append(randomtags, string(v))
 	}
-	return randomTags
+	return randomtags
 }
 
 type Book struct {
