@@ -1,6 +1,7 @@
-package main
+package data_source
 
 import (
+	"bufio"
 	"encoding/csv"
 	"io/ioutil"
 	"log"
@@ -17,6 +18,37 @@ type Tags struct {
 }
 
 var tagPrefix = "##"
+var wikiDir = os.Getenv("VIMWIKI")
+
+func getTagList() ([]string, error) {
+	result := []string{}
+	err := filepath.Walk(wikiDir, func(path string, info os.FileInfo, err error) error {
+		if filepath.Ext(path) != ".md" {
+			return nil
+		}
+		filename := path
+		val, err := os.Open(filename)
+		if err != nil {
+			return err
+		}
+		defer val.Close()
+
+		scanner := bufio.NewScanner(val)
+
+		for scanner.Scan() {
+			line := scanner.Text()
+			if strings.Contains(line, tagPrefix) {
+				result = append(result, line)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return result, err
+	}
+	log.Println("Get Tag All Done")
+	return result, nil
+}
 
 func getTagAll() (map[string][]string, error) {
 	result := make(map[string][]string)
@@ -30,7 +62,7 @@ func getTagAll() (map[string][]string, error) {
 		}
 
 		var tag string
-		ss := strings.Split(string(val), "\n\n##")
+		ss := strings.Split(string(val), "\n##")
 		for _, s := range ss {
 			tag = getTag(s)
 			if strings.HasPrefix(s, tagPrefix) {
