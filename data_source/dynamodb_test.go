@@ -1,4 +1,4 @@
-package main
+package data_source
 
 import (
 	. "github.com/onsi/ginkgo"
