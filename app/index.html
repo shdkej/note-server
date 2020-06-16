@@ -10,6 +10,7 @@ license that can be found in the LICENSE file.
 	<meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Go wasm</title>
+	<link rel="stylesheet" href="/styles.css">
 </head>
 
 <body>
@@ -70,11 +71,15 @@ license that can be found in the LICENSE file.
         <input type="checkbox" onClick="changetheme(event)" id="theme-switch"/>Toggle-Theme</button>
     </div>
     <div id="contents">
+        <article id="article">
+        </article>
+    </div>
+    <div id="contents">
         <article id="recent-article">
             {{ .Content }}
         </article>
     </div>
-	<link rel="stylesheet" href="/styles.css">
+    <div id="loader" class="loader"></div>
 	<script>
         const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
         if (currentTheme) {
