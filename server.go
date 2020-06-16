@@ -13,6 +13,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/russross/blackfriday/v2"
+	db "github.com/shdkej/go-wasm/data_source"
 )
 
 var (
@@ -20,29 +21,29 @@ var (
 	dir    = flag.String("dir", "./app", "directory to serve")
 )
 
-var wikiDir = os.Getenv("VIMWIKI")
+type DataServer struct {
+	Source db.DataSource
+}
 
 func main() {
 	flag.Parse()
 
 	// Redis, Dynamodb, File
-	c := &Client{}
+	c := &db.Redis{}
 	c.Init()
 
-	//
-	db := Database{c}
+	data := DataServer{c}
 
-	err := c.ping()
+	err := c.Ping()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/category", db.CategoryHandler)
-	r.HandleFunc("/category/{key}", db.ArticleHandler)
-	r.HandleFunc("/tag", db.TagHandler)
-	r.HandleFunc("/tag/{key}", db.TagOneHandler)
-	r.HandleFunc("/random", db.TagHandler)
+	r.HandleFunc("/tag", data.TagHandler)
+	r.HandleFunc("/tag/{key}", data.TagOneHandler)
+	r.HandleFunc("/random", data.TagHandler)
+	r.HandleFunc("/Initial", data.InitialHandler)
 
 	r.HandleFunc("/health", HealthCheckHandler)
 	r.HandleFunc("/test", HTTP2TestHandler)
@@ -54,32 +55,25 @@ func main() {
 	//log.Fatal(srv.ListenAndServe())
 }
 
-func (c Database) CategoryHandler(w http.ResponseWriter, r *http.Request) {
-	files, err := getFileAll()
-	var filename string
-	for _, file := range files {
-		filename += "<a href='/data/" + file.Name() + "'>" + file.Name() + "</a><br/> "
-	}
-	err = RenderOutput(w, filename)
-	c.source.get("test")
-	if err != nil {
-		log.Fatal(err)
-	}
+func (d DataServer) InitialHandler(w http.ResponseWriter, r *http.Request) {
+	d.Source.SetInitial()
 }
 
-func (c Database) TagHandler(w http.ResponseWriter, r *http.Request) {
+func (d DataServer) TagHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	hits, err := c.source.hits(vars["key"])
+	hits, err := d.Source.Hits(vars["key"])
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	tags := c.getRandomContent()
+	tags, err := d.Source.GetAllKey("test")
+	if err != nil {
+		log.Fatal(err)
+	}
 	var taglines string
 	taglines += "<h1>Random</h1>"
 
 	for _, tag := range tags {
-		taglines += "<a href='/tag/" + strings.Trim(getTag(tag), "# ") + "'>" + getTag(tag) + "</a><br/><p>" + tag + "</p>"
+		taglines += "<a href='/tag/" + strings.Trim(tag, "# ") + "'>" + tag + "</a><br/><p>" + tag + "</p>"
 	}
 	if err != nil {
 		log.Fatal(err)
@@ -95,14 +89,14 @@ func (c Database) TagHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hits: %v\n <h1>Content Based</h1>%v", hits, string(val))
 }
 
-func (c Database) TagOneHandler(w http.ResponseWriter, r *http.Request) {
+func (d DataServer) TagOneHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	hits, err := c.source.hits(vars["key"])
+	hits, err := d.Source.Hits(vars["key"])
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	content, err := c.source.getTagParagraph(vars["key"])
+	content, err := d.Source.GetTagParagraph(vars["key"])
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -111,25 +105,8 @@ func (c Database) TagOneHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hits: %v\n", hits)
 }
 
-func (c Database) ArticleHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	w.WriteHeader(http.StatusOK)
-	filename := wikiDir + vars["key"] + ".md"
-	val, err := ioutil.ReadFile(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-	output := blackfriday.Run(val)
-	err = RenderOutput(w, string(output))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Fprintf(w, "Key: %v\n", vars["key"])
-}
-
-func (c Database) getRandomContent() []string {
-	tags, err := c.source.getSet("## markdown")
+func (d DataServer) getRandomContent() []string {
+	tags, err := d.Source.GetSet("## markdown")
 	if err != nil {
 		log.Fatal(err)
 	}

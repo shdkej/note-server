@@ -12,6 +12,7 @@ func main() {
 	c := make(chan struct{}, 0)
 
 	getWASM()
+	initial()
 	fmt.Println("Hello wasm!!")
 	<-c
 }
