@@ -78,3 +78,13 @@ a   { color: var(--link-color); }
 
 @media (prefers-color-scheme: light) {
 }
+
+.loader {
+  border: 16px solid #f3f3f3; /* Light grey */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 64px;
+  height: 64px;
+  transform: translate(-50%, -50%);
+}

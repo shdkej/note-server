@@ -1,4 +1,4 @@
-package main
+package data_source
 
 import (
 	"testing"
@@ -13,12 +13,12 @@ func TestRedis(t *testing.T) {
 }
 
 var _ = Describe("Running Redis", func() {
-	pool := Client{}
+	pool := Redis{}
 	pool.Init()
 
 	Context("Test ping", func() {
 		It("pong", func() {
-			Expect(pool.ping()).Should(BeNil())
+			Expect(pool.Ping()).Should(BeNil())
 		})
 	})
 
@@ -26,13 +26,13 @@ var _ = Describe("Running Redis", func() {
 		key := "test"
 		value := "value"
 		It("set strings", func() {
-			Expect(pool.set(key, value)).Should(BeNil())
+			Expect(pool.Set(key, value)).Should(BeNil())
 		})
 		It("get strings", func() {
-			Expect(pool.get(key)).Should(Equal("value"))
+			Expect(pool.Get(key)).Should(Equal("value"))
 		})
 		It("get strings empty", func() {
-			Expect(pool.get("empty")).Should(BeEmpty())
+			Expect(pool.Get("empty")).Should(BeEmpty())
 		})
 	})
 
@@ -45,13 +45,13 @@ var _ = Describe("Running Redis", func() {
 		}
 
 		It("set sets", func() {
-			Expect(pool.setStruct(tag)).Should(BeNil())
+			Expect(pool.SetStruct(tag)).Should(BeNil())
 		})
 		It("get sets", func() {
-			Expect(pool.getStruct(tag.Tag)).Should(Equal(tag))
+			Expect(pool.GetStruct(tag.Tag)).Should(Equal(tag))
 		})
 		It("get sets empty", func() {
-			Expect(pool.getStruct("empty")).Should(Equal(Tag{}))
+			Expect(pool.GetStruct("empty")).Should(Equal(Tag{}))
 		})
 	})
 

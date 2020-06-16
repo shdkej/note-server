@@ -1,4 +1,4 @@
-package main
+package data_source
 
 import (
 	"fmt"
@@ -8,11 +8,11 @@ import (
 	"github.com/go-redis/redis"
 )
 
-type Client struct {
+type Redis struct {
 	redis *redis.Client
 }
 
-func (c *Client) Init() error {
+func (c *Redis) Init() error {
 	host := os.Getenv("REDIS_HOST")
 	c.redis = redis.NewClient(&redis.Options{
 		Addr:     host + ":6379",
@@ -23,7 +23,7 @@ func (c *Client) Init() error {
 	return nil
 }
 
-func (c *Client) ping() error {
+func (c *Redis) Ping() error {
 	pong, err := c.redis.Ping().Result()
 	if err != nil {
 		return err
@@ -33,18 +33,16 @@ func (c *Client) ping() error {
 	return nil
 }
 
-func (c *Client) setInitial() error {
-	/*
-		err = c.putTags()
-		if err != nil {
-			return err
-		}
-	*/
+func (c *Redis) SetInitial() error {
+	err := c.PutTags()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
-func (c *Client) hits(page string) (int64, error) {
+func (c *Redis) Hits(page string) (int64, error) {
 	hitstring := page + ":"
 	hits, err := c.redis.Incr(hitstring).Result()
 	if err != nil {
@@ -53,7 +51,7 @@ func (c *Client) hits(page string) (int64, error) {
 	return hits, nil
 }
 
-func (c *Client) set(keyword string, value string) error {
+func (c *Redis) Set(keyword string, value string) error {
 	err := c.redis.Set(keyword, value, 0).Err()
 	if err != nil {
 		return err
@@ -61,7 +59,7 @@ func (c *Client) set(keyword string, value string) error {
 	return nil
 }
 
-func (c *Client) append(keyword string, value string) error {
+func (c *Redis) Append(keyword string, value string) error {
 	err := c.redis.Append(keyword, value).Err()
 	if err != nil {
 		return err
@@ -69,7 +67,7 @@ func (c *Client) append(keyword string, value string) error {
 	return nil
 }
 
-func (c *Client) get(keyword string) (string, error) {
+func (c *Redis) Get(keyword string) (string, error) {
 	key := keyword
 	val, err := c.redis.Get(key).Result()
 	if err == redis.Nil {
@@ -83,7 +81,7 @@ func (c *Client) get(keyword string) (string, error) {
 	return val, nil
 }
 
-func (c *Client) pushSet(keyword string, value string) error {
+func (c *Redis) PushSet(keyword string, value string) error {
 	err := c.redis.RPush(keyword, value).Err()
 	if err != nil {
 		return err
@@ -91,7 +89,7 @@ func (c *Client) pushSet(keyword string, value string) error {
 	return nil
 }
 
-func (c *Client) getSet(keyword string) ([]string, error) {
+func (c *Redis) GetSet(keyword string) ([]string, error) {
 	val, err := c.redis.LRange(keyword, 0, 100).Result()
 	if err != nil {
 		return val, err
@@ -105,7 +103,7 @@ type Article struct {
 	Content  string `json:"content"`
 }
 
-func (c *Client) setStruct(article Tag) error {
+func (c *Redis) SetStruct(article Tag) error {
 	const objectPrefix string = "article:"
 
 	articleM := structs.Map(article)
@@ -118,7 +116,7 @@ func (c *Client) setStruct(article Tag) error {
 	return nil
 }
 
-func (c *Client) getStruct(title string) (Tag, error) {
+func (c *Redis) GetStruct(title string) (Tag, error) {
 	const objectPrefix string = "article:"
 
 	title = objectPrefix + title
@@ -146,7 +144,7 @@ func (c *Client) getStruct(title string) (Tag, error) {
 	return tag, nil
 }
 
-func (c *Client) getAllKey(tag string) ([]string, error) {
+func (c *Redis) GetAllKey(tag string) ([]string, error) {
 	var cursor uint64
 	var keys []string
 	tag = "*" + tag
@@ -179,7 +177,7 @@ func (c *Client) getAllKey(tag string) ([]string, error) {
 	return result, nil
 }
 
-func (c *Client) getTagParagraph(tag string) ([]string, error) {
+func (c *Redis) GetTagParagraph(tag string) ([]string, error) {
 	var cursor uint64
 	var keys []string
 	tag = "*" + tag
@@ -202,7 +200,7 @@ func (c *Client) getTagParagraph(tag string) ([]string, error) {
 
 	var result []string
 	for _, key := range keys {
-		list_value, err := c.getSet(key)
+		list_value, err := c.GetSet(key)
 		if err != nil {
 			return []string{"Empty"}, err
 		}
@@ -212,7 +210,7 @@ func (c *Client) getTagParagraph(tag string) ([]string, error) {
 	return result, nil
 }
 
-func (c *Client) putTags() error {
+func (c *Redis) PutTags() error {
 	values, err := getTagAll()
 	if err != nil {
 		return err
@@ -229,7 +227,7 @@ func (c *Client) putTags() error {
 		if len(tagline) == 0 {
 			continue
 		}
-		c.pushSet(key, tagline[0])
+		c.PushSet(key, tagline[0])
 	}
 	return nil
 }
