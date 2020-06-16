@@ -28,6 +28,8 @@ func initial() {
 		fmt.Printf("%s\n", err)
 	}
 
+	loader := document.Call("getElementById", "loader")
+	loader.Set("style", "display:none")
 	p.Set("innerText", string(data))
 }
 
