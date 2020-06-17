@@ -20,6 +20,8 @@ func (c *Redis) Init() error {
 		DB:       0,
 	})
 
+	c.Ping()
+
 	return nil
 }
 
@@ -97,18 +99,12 @@ func (c *Redis) GetSet(keyword string) ([]string, error) {
 	return val, err
 }
 
-type Article struct {
-	Title    string `json:"title"`
-	Category string `json:"category"`
-	Content  string `json:"content"`
-}
+func (c *Redis) SetStruct(tag Tag) error {
+	const objectPrefix string = "tag:"
 
-func (c *Redis) SetStruct(article Tag) error {
-	const objectPrefix string = "article:"
+	articleM := structs.Map(tag)
 
-	articleM := structs.Map(article)
-
-	err := c.redis.HMSet(objectPrefix+article.Tag, articleM).Err()
+	err := c.redis.HMSet(objectPrefix+tag.Tag, articleM).Err()
 	if err != nil {
 		return err
 	}
@@ -117,7 +113,7 @@ func (c *Redis) SetStruct(article Tag) error {
 }
 
 func (c *Redis) GetStruct(title string) (Tag, error) {
-	const objectPrefix string = "article:"
+	const objectPrefix string = "tag:"
 
 	title = objectPrefix + title
 	m, err := c.redis.HGetAll(title).Result()
@@ -171,7 +167,12 @@ func (c *Redis) GetAllKey(tag string) ([]string, error) {
 	//interface to []string
 	result := make([]string, len(value))
 	for i, v := range value {
-		result[i] = v.(string)
+		switch v.(type) {
+		case string:
+			result[i] = v.(string)
+		default:
+			fmt.Println(v)
+		}
 	}
 
 	return result, nil

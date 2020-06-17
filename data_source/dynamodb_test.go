@@ -23,13 +23,13 @@ var _ = Describe("Running Dynamodb", func() {
 			Expect(conn.TableName).Should(Equal(tableName))
 		})
 		It("Create Item", func() {
-			Expect(conn.put(tag)).Should(BeNil())
+			Expect(conn.SetStruct(tag)).Should(BeNil())
 		})
 		It("Get Item", func() {
-			Expect(conn.get(tag.Tag)).Should(Equal(tag))
+			Expect(conn.GetStruct(tag.Tag)).Should(Equal(tag))
 		})
 		It("Delete Item", func() {
-			Expect(conn.deleteItem(tag)).Should(BeNil())
+			Expect(conn.Delete(tag)).Should(BeNil())
 		})
 		//It("Load Json", func() {
 		//	Expect(conn.loadData("moviedata.json")).Should(BeNil())
