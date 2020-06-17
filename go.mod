@@ -9,11 +9,14 @@ require (
 	github.com/codegangsta/gin v0.0.0-20171026143024-cafe2ce98974 // indirect
 	github.com/fatih/structs v1.1.0
 	github.com/go-redis/redis v6.15.7+incompatible
+	github.com/golang/protobuf v1.4.1
 	github.com/gorilla/mux v1.7.4
 	github.com/mattn/go-shellwords v1.0.10 // indirect
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.9.0
 	github.com/russross/blackfriday/v2 v2.0.1
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
+	google.golang.org/grpc v1.29.1
+	google.golang.org/protobuf v1.24.0
 	gopkg.in/urfave/cli.v1 v1.20.0 // indirect
 )

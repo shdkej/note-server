@@ -2,7 +2,6 @@ package data_source
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -22,6 +21,7 @@ func (conn *Dynamodb) Init() error {
 		SharedConfigState: session.SharedConfigEnable,
 	}))
 	conn.svc = dynamodb.New(sess)
+	log.Println("DynamoDB Access")
 
 	return nil
 }
@@ -36,7 +36,7 @@ func (conn *Dynamodb) getTable() error {
 			return err
 		}
 		for _, n := range result.TableNames {
-			fmt.Println(*n)
+			log.Println(*n)
 			tableName = *n
 			conn.TableName = tableName
 			return nil
@@ -51,7 +51,7 @@ func (conn *Dynamodb) getTable() error {
 	return nil
 }
 
-func (conn *Dynamodb) put(tag Tag) error {
+func (conn *Dynamodb) SetStruct(tag Tag) error {
 	av, err := dynamodbattribute.MarshalMap(tag)
 	if err != nil {
 		log.Fatal(err)
@@ -66,11 +66,11 @@ func (conn *Dynamodb) put(tag Tag) error {
 		log.Fatal(err)
 		return err
 	}
-	fmt.Println("Succeessfully added : " + tag.Tag)
+	log.Println("Succeessfully added : " + tag.Tag)
 	return nil
 }
 
-func (conn *Dynamodb) get(key string) Tag {
+func (conn *Dynamodb) GetStruct(key string) Tag {
 	result, err := conn.svc.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(conn.TableName),
 		Key: map[string]*dynamodb.AttributeValue{
@@ -94,7 +94,7 @@ func (conn *Dynamodb) get(key string) Tag {
 	return item
 }
 
-func (conn *Dynamodb) deleteItem(item Tag) error {
+func (conn *Dynamodb) Delete(item Tag) error {
 	input := &dynamodb.DeleteItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"Tag": {
@@ -109,6 +109,26 @@ func (conn *Dynamodb) deleteItem(item Tag) error {
 		return err
 	}
 	log.Println("Deleted : " + item.Tag)
+	return nil
+}
+
+func (conn *Dynamodb) PutTags() error {
+	values, err := getTagAll()
+	if err != nil {
+		return err
+	}
+	for key, tagline := range values {
+		tag := Tag{
+			FileName:    tagline[0],
+			FileContent: "0",
+			Tag:         key,
+			TagLine:     tagline[1],
+		}
+		if len(tagline) == 0 {
+			continue
+		}
+		conn.SetStruct(tag)
+	}
 	return nil
 }
 
@@ -148,25 +168,5 @@ func (conn *Dynamodb) loadData(filename string) error {
 	}
 	log.Println("Load Json Complete")
 
-	return nil
-}
-
-func (conn *Dynamodb) putTags() error {
-	values, err := getTagAll()
-	if err != nil {
-		return err
-	}
-	for key, tagline := range values {
-		tag := Tag{
-			FileName:    tagline[0],
-			FileContent: "0",
-			Tag:         key,
-			TagLine:     tagline[1],
-		}
-		if len(tagline) == 0 {
-			continue
-		}
-		conn.put(tag)
-	}
 	return nil
 }
