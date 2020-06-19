@@ -5,14 +5,14 @@ import (
 )
 
 func getWASM() {
-	registerCallbacks()
+	//registerCallbacks()
 }
 
 func main() {
 	c := make(chan struct{}, 0)
 
 	getWASM()
-	initial()
+	//initial()
 	fmt.Println("Hello wasm!!")
 	<-c
 }
