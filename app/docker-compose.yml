@@ -1,9 +1,11 @@
 version: "2"
 services:
     gobuilder:
-      image: golang:1.14.3
+      #image: golang:1.14.3
+      build: ./
       volumes:
           - ./:/src/
+          - ../:/go/src/github.com/shdkej/note-server
           - /home/sh/vimwiki:/vimwiki
       working_dir: /src
       tty: true
