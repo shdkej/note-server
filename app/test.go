@@ -61,6 +61,7 @@ func toggleNavbar(this js.Value, i []js.Value) interface{} {
 	p := document.Call("getElementById", "go_wasm").
 		Get("classList").
 		Call("toggle", "active")
+
 	return p
 }
 
