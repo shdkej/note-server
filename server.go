@@ -13,7 +13,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/russross/blackfriday/v2"
-	db "github.com/shdkej/go-wasm/data_source"
+	db "github.com/shdkej/note-server/data_source"
 	"google.golang.org/grpc"
 )
 

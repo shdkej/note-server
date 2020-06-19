@@ -14,7 +14,8 @@ type Tags struct {
 	tag  string
 }
 
-var tagPrefix = "##"
+const tagPrefix = "##"
+
 var wikiDir = os.Getenv("VIMWIKI")
 
 func getTagList() ([]string, error) {
