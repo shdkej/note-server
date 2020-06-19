@@ -6,7 +6,7 @@ services:
             - ./:/src/
             - /home/sh/vimwiki:/vimwiki
         working_dir: /src
-        command: gin --appPort 8080 --all -i run server.go
+        command: gin -a 8080 --all -i run server.go
         environment:
           - REDIS_HOST=redis
           - VIMWIKI=/vimwiki
