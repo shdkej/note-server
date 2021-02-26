@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.4](https://github.com/shdkej/note-server/compare/v0.0.3...v0.0.4) (2021-02-26)
+
+
+### Features
+
+* Add test coverage action ([f3e1e27](https://github.com/shdkej/note-server/commit/f3e1e27716e3131d467d965f656dc44c8e1f8d0d))
+
+
+### Bug Fixes
+
+* Update coveralls action version ([c6ce3a2](https://github.com/shdkej/note-server/commit/c6ce3a2413f84b05cfd93b8b5ff86fbacf112f68))
+
 ### [0.0.3](https://github.com/shdkej/note-server/compare/v0.0.2...v0.0.3) (2021-02-26)
 
 
