@@ -15,6 +15,13 @@ jobs:
       with:
         node-version: '14'
 
+    - name: Set Tag
+      id: tag
+      run: echo ::set-ouptut name=TAG::${GITHUB_REF#refs/tags/}
+    - name: Build image
+      #run: docker build . --file Dockerfile-build --tag ${{ steps.tag.outputs.TAG }}
+      run: echo ${{ steps.tag.outputs.TAG }}
+
     - name: standard versioning
       run: |
         npm i -g standard-version
