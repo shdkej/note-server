@@ -45,7 +45,7 @@ jobs:
 
       - name: Fail Alert
         uses: actions/github-script@0.3.0
-        #if: failure()
+        if: failure()
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
