@@ -1,5 +1,5 @@
 name: go build test
-on: ["push", "pull_request"]
+on: "pull_request"
 
 jobs:
   build:
@@ -49,5 +49,5 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
-            github.issues.createComment({ issue_number, owner, repo, body: 'Failed' });
+            const { repo: { owner, repo }  } = context;
+            github.issues.createComment({ owner, repo, body: 'Failed' });
