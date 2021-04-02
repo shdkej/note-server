@@ -15,12 +15,6 @@ jobs:
       with:
         node-version: '14'
 
-    - name: Get Tag
-      id: tag
-      run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-    - name: Use tag
-      run: echo ${{steps.tag.outputs.tag}}
-
     - name: pull-request
       uses: repo-sync/pull-request@v2
       with:
