@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"html/template"
 	"io"
@@ -17,45 +16,23 @@ import (
 	"google.golang.org/grpc"
 )
 
-var (
-	listen = flag.String("listen", ":8080", "listen address")
-	dir    = flag.String("dir", "./app", "directory to serve")
-)
-
-type DataServer struct {
-	Source db.DataSource
-}
-
-func main() {
-	flag.Parse()
-
-	// Redis, Dynamodb, File
-	c := &db.Redis{}
-
-	data := DataServer{c}
-	err := data.Source.Init()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	go db.RungRPC()
-
+func (d DataServer) httpServer() {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/tag", data.TagHandler)
-	r.HandleFunc("/tag/{key}", data.TagOneHandler)
-	r.HandleFunc("/random", data.RandomHandler)
-	r.HandleFunc("/Initial", data.InitialHandler)
+	r.HandleFunc("/tag", d.TagHandler)
+	r.HandleFunc("/tag/{key}", d.TagOneHandler)
+	r.HandleFunc("/random", d.RandomHandler)
+	r.HandleFunc("/Initial", d.InitialHandler)
 
 	r.HandleFunc("/grpc", gRPCHandler)
 	r.HandleFunc("/stream", gRPCStreamHandler)
 	r.HandleFunc("/health", HealthCheckHandler)
 	r.HandleFunc("/test", HTTP2TestHandler)
+
 	r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("/src/app"))))
 
 	log.Printf("listening on %q...", *listen)
 	srv := &http.Server{Addr: *listen, Handler: r}
-	//log.Fatal(srv.ListenAndServe())
 	log.Fatal(srv.ListenAndServeTLS("server.crt", "server.key"))
 }
 
