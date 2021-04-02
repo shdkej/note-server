@@ -1,0 +1,23 @@
+name: Pull Request
+on:
+  push:
+    branches: [ feature/* ]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: pull-request
+      uses: repo-sync/pull-request@v2
+      id: pr
+      with:
+        destination_branch: "master"
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        pr_title: "${{ github.ref }} into master"
+        pr_body: ":robot: need template"
+        pr_label: "auto-pr"
+    - name: output
+      run: |
+        echo ${{steps.pr.outputs.pr_number}}
+        echo ${{steps.pr.outputs.has_changed_files}}
