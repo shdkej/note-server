@@ -8,6 +8,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
     - name: pull-request
       uses: repo-sync/pull-request@v2
       id: pr
