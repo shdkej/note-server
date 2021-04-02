@@ -17,7 +17,7 @@ jobs:
 
     - name: Get Tag
       id: tag
-      uses: dawidd6/action-get-tag@v1
+      run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
     - name: Use tag
       run: echo ${{steps.tag.outputs.tag}}
 
