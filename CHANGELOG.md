@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 1.0.1 (2021-04-02)
+
+
+### Bug Fixes
+
+* 🐛 tag error ([5c4b5c5](https://github.com/shdkej/note-server/commit/5c4b5c592be29bbfe0f9d84d77ce06f239584b48))
+
+### [0.0.8](https://github.com/shdkej/note-server/compare/v0.0.7...v0.0.8) (2021-04-02)
+
+### [0.0.7](https://github.com/shdkej/note-server/compare/v0.0.6...v0.0.7) (2021-04-02)
+
+
+### Bug Fixes
+
+* 🐛 commit message test ([b90ecc7](https://github.com/shdkej/note-server/commit/b90ecc7ac1f958c4464ce738d633e01ee2769896))
+
 ### [0.0.6](https://github.com/shdkej/note-server/compare/v0.0.5...v0.0.6) (2021-04-02)
 
 ### [0.0.5](https://github.com/shdkej/note-server/compare/v0.0.4...v0.0.5) (2021-02-26)
