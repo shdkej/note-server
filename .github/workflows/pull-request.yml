@@ -18,6 +18,8 @@ jobs:
     - name: standard versioning
       run: |
         npm i -g standard-version
+        git config --global user.email "shdkej@github.com"
+        git config --global user.name "shdkej"
         standard-version
 
     - name: pull-request
