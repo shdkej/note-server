@@ -2,12 +2,13 @@ package data_source
 
 import (
 	"encoding/json"
+	"log"
+	"os"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"log"
-	"os"
 )
 
 type Dynamodb struct {
@@ -109,26 +110,6 @@ func (conn *Dynamodb) Delete(item Tag) error {
 		return err
 	}
 	log.Println("Deleted : " + item.Tag)
-	return nil
-}
-
-func (conn *Dynamodb) PutTags() error {
-	values, err := getTagAll()
-	if err != nil {
-		return err
-	}
-	for key, tagline := range values {
-		tag := Tag{
-			FileName:    tagline[0],
-			FileContent: "0",
-			Tag:         key,
-			TagLine:     tagline[1],
-		}
-		if len(tagline) == 0 {
-			continue
-		}
-		conn.SetStruct(tag)
-	}
 	return nil
 }
 

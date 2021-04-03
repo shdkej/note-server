@@ -35,15 +35,6 @@ func (c *Redis) Ping() error {
 	return nil
 }
 
-func (c *Redis) SetInitial() error {
-	err := c.PutTags()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (c *Redis) Hits(page string) (int64, error) {
 	hitstring := page + ":"
 	hits, err := c.redis.Incr(hitstring).Result()
@@ -83,22 +74,6 @@ func (c *Redis) Get(keyword string) (string, error) {
 	return val, nil
 }
 
-func (c *Redis) PushSet(keyword string, value string) error {
-	err := c.redis.RPush(keyword, value).Err()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (c *Redis) GetSet(keyword string) ([]string, error) {
-	val, err := c.redis.LRange(keyword, 0, 100).Result()
-	if err != nil {
-		return val, err
-	}
-	return val, err
-}
-
 func (c *Redis) SetStruct(tag Tag) error {
 	const objectPrefix string = "tag:"
 
@@ -110,6 +85,14 @@ func (c *Redis) SetStruct(tag Tag) error {
 	}
 
 	return nil
+}
+
+func (c *Redis) GetSet(keyword string) ([]string, error) {
+	val, err := c.redis.LRange(keyword, 0, 100).Result()
+	if err != nil {
+		return val, err
+	}
+	return val, err
 }
 
 func (c *Redis) GetStruct(title string) (Tag, error) {
@@ -209,26 +192,4 @@ func (c *Redis) GetTagParagraph(tag string) ([]string, error) {
 	}
 
 	return result, nil
-}
-
-func (c *Redis) PutTags() error {
-	values, err := getTagAll()
-	if err != nil {
-		return err
-	}
-	for key, tagline := range values {
-		/*
-			tag := Tag{
-				FileName:    tagline[0],
-				FileContent: "0",
-				Tag:         key,
-				TagLine:     tagline[1],
-			}
-		*/
-		if len(tagline) == 0 {
-			continue
-		}
-		c.PushSet(key, tagline[0])
-	}
-	return nil
 }

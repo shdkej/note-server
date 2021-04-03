@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"net/http"
@@ -7,13 +7,15 @@ import (
 )
 
 func TestHealthCheckHandler(t *testing.T) {
+	httpserver := HTTPServer{}
+
 	req, err := http.NewRequest("GET", "/health", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(HealthCheckHandler)
+	handler := http.HandlerFunc(httpserver.HealthCheck)
 
 	handler.ServeHTTP(rr, req)
 

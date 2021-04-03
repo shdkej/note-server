@@ -4,7 +4,7 @@
 // 	protoc        v3.6.1
 // source: tag.proto
 
-package data_source
+package server
 
 import (
 	context "context"

@@ -1,7 +1,7 @@
 version: "2"
 services:
     golang:
-        build: ./
+        build: ./deployments
         volumes:
             - ./:/src/
             - /home/sh/vimwiki:/vimwiki
