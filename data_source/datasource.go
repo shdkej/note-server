@@ -8,7 +8,7 @@ type Tag struct {
 }
 
 type DB struct {
-	db DataSource
+	Store DataSource
 }
 
 type DataSource interface {
@@ -20,17 +20,24 @@ type DataSource interface {
 	GetTagParagraph(string) ([]string, error)
 }
 
-func (v DB) Init() error {
-	err := v.db.Init()
+func (v *DB) Init() error {
+	err := v.Store.Init()
+	err = v.Store.Ping()
 	return err
 }
 
-func (v DB) Hits(s string) (int64, error) {
+func (v *DB) Hits(s string) (int64, error) {
 	hits, err := v.Hits(s)
 	return hits, err
 }
 
-func (v DB) PutTags() error {
+func (v *DB) GetAllKey(s string) ([]string, error) {
+	var tags []string
+	err := v.Store.Ping()
+	return tags, err
+}
+
+func (v *DB) PutTags() error {
 	values, err := getTagAll()
 	if err != nil {
 		return err
@@ -45,7 +52,7 @@ func (v DB) PutTags() error {
 		if len(tagline) == 0 {
 			continue
 		}
-		v.db.SetStruct(tag)
+		v.Store.SetStruct(tag)
 	}
 	return nil
 }

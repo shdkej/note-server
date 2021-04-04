@@ -6,16 +6,14 @@ import (
 	"testing"
 )
 
-func TestHealthCheckHandler(t *testing.T) {
-	httpserver := HTTPServer{}
-
+func TestHandler(t *testing.T) {
 	req, err := http.NewRequest("GET", "/health", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(httpserver.HealthCheck)
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
 
 	handler.ServeHTTP(rr, req)
 
@@ -28,5 +26,32 @@ func TestHealthCheckHandler(t *testing.T) {
 	if rr.Body.String() != expected {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			rr.Body.String(), expected)
+	}
+}
+
+func TestAddHandler(t *testing.T) {
+	w := httptest.NewRecorder()
+	httpserver := HTTPServer{}
+	httpserver.Init()
+	httpserver.AddHandler("/health", func() string {
+		return `{"alive": true}`
+	})
+
+	req, err := http.NewRequest("GET", "/health", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	httpserver.r.ServeHTTP(w, req)
+
+	if status := w.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	expected := `{"alive": true}`
+	if w.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			w.Body.String(), expected)
 	}
 }

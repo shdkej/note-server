@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log"
 
 	db "github.com/shdkej/note-server/data_source"
 	server "github.com/shdkej/note-server/server"
@@ -17,10 +18,16 @@ func main() {
 
 	// Redis, Dynamodb, File
 	c := &db.Redis{}
-	httpserver := server.HTTPServer{}
-	grpcserver := server.GRPCServer{}
-
+	data := db.DB{Store: c}
 	c.Init()
-	go httpserver.RunServer(*listen)
-	go grpcserver.RunServer()
+	log.Println(data)
+
+	httpserver := &server.HTTPServer{}
+	srv := server.Server{Handler: httpserver, Datasource: &data}
+	srv.RunServer()
+	/*
+		grpcserver := &server.GRPCServer{}
+
+		grpcserver.RunServer()
+	*/
 }

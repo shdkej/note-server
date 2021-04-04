@@ -1,9 +1,7 @@
 package server
 
 import (
-	"fmt"
 	"html/template"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -13,48 +11,53 @@ import (
 )
 
 type HTTPServer struct {
+	srv *http.Server
+	r   *mux.Router
 }
 
-func (server HTTPServer) RunServer(listen string) {
-	r := mux.NewRouter()
-
-	r.HandleFunc("/tag", func(w http.ResponseWriter, r *http.Request) {
-		taglines := getTags()
-		err := RenderOutput(w, taglines)
-		if err != nil {
-			log.Println(err)
-		}
-	})
-
-	r.HandleFunc("/tag/{key}", func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		fmt.Fprintf(w, "Hits: %v\n", vars)
-		taglines := getTag(vars["key"])
-		err := RenderArrayOutput(w, taglines)
-		if err != nil {
-			log.Println(err)
-		}
-	})
-
-	r.HandleFunc("/random", func(w http.ResponseWriter, r *http.Request) {
-		random := RandomHandler()
-		fmt.Fprintf(w, "<h1>Random</h1>%v", random)
-	})
-
-	r.HandleFunc("/health", server.HealthCheck)
-	r.HandleFunc("/test", HTTP2TestHandler)
-
-	r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("/src/app"))))
-
-	log.Printf("listening on %q...", listen)
-	srv := &http.Server{Addr: listen, Handler: r}
-	log.Fatal(srv.ListenAndServeTLS("server.crt", "server.key"))
+func (s *HTTPServer) Init() {
+	s.r = mux.NewRouter()
+	s.r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("/src/app"))))
 }
 
-func (s HTTPServer) HealthCheck(w http.ResponseWriter, r *http.Request) {
+func (s *HTTPServer) RunServer() {
+	log.Printf("listening on %q...", ":8080")
+	s.srv = &http.Server{Addr: ":8080", Handler: s.r}
+	log.Fatal(s.srv.ListenAndServe())
+	path, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Fatal(s.srv.ListenAndServeTLS(path+"/server.crt", path+"/server.key"))
+}
+
+func (s *HTTPServer) AddHandler(url string, handler func() string) {
+	s.r.HandleFunc(url, func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		value := handler()
+		RenderOutput(w, value)
+	})
+}
+
+func (s *HTTPServer) restful(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	io.WriteString(w, `{"alive": true}`)
+	var value string
+	switch r.Method {
+	case "GET":
+		value = "get"
+	case "POST":
+		value = "post"
+	case "PUT":
+		value = "put"
+	case "DELETE":
+		value = "delete"
+	default:
+		w.WriteHeader(http.StatusNotFound)
+	}
+	value = `{"message":` + value + `}`
+	w.Write([]byte(value))
 }
 
 func HTTP2TestHandler(w http.ResponseWriter, r *http.Request) {

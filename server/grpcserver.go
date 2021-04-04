@@ -85,7 +85,7 @@ func (s *tagManagerServer) GetTag(ctx context.Context, message *Message) (*Note,
 }
 
 func (s *tagManagerServer) GetTags(message *Message, stream TagManager_GetTagsServer) error {
-	list := getTag("##")
+	list := [3]string{"1", "2", "3"}
 	for _, tags := range list {
 		tag := &Note{Tag: tags}
 		if err := stream.Send(tag); err != nil {
