@@ -22,12 +22,10 @@ func main() {
 	c.Init()
 	log.Println(data)
 
+	grpcserver := &server.GRPCServer{}
+	gsrv := server.Server{Handler: grpcserver, Datasource: &data}
+	go gsrv.RunServer()
 	httpserver := &server.HTTPServer{}
 	srv := server.Server{Handler: httpserver, Datasource: &data}
 	srv.RunServer()
-	/*
-		grpcserver := &server.GRPCServer{}
-
-		grpcserver.RunServer()
-	*/
 }

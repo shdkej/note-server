@@ -11,32 +11,31 @@ import (
 )
 
 type HTTPServer struct {
-	srv *http.Server
-	r   *mux.Router
+	srv    *http.Server
+	router *mux.Router
 }
 
 func (s *HTTPServer) Init() {
-	s.r = mux.NewRouter()
-	s.r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("/src/app"))))
+	s.router = mux.NewRouter()
+	//s.router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("/src/app"))))
 }
 
 func (s *HTTPServer) RunServer() {
 	log.Printf("listening on %q...", ":8080")
-	s.srv = &http.Server{Addr: ":8080", Handler: s.r}
-	log.Fatal(s.srv.ListenAndServe())
+	s.srv = &http.Server{Addr: ":8080", Handler: s.router}
 	path, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(s.srv.ListenAndServeTLS(path+"/server.crt", path+"/server.key"))
+	log.Fatal(s.srv.ListenAndServeTLS(path+"/server/server.crt", path+"/server/server.key"))
 }
 
 func (s *HTTPServer) AddHandler(url string, handler func() string) {
-	s.r.HandleFunc(url, func(w http.ResponseWriter, r *http.Request) {
+	s.router.HandleFunc(url, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		value := handler()
-		RenderOutput(w, value)
+		w.Write([]byte(value))
 	})
 }
 

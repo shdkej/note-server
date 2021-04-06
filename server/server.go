@@ -18,21 +18,13 @@ type Protocol interface {
 	AddHandler(string, func() string)
 }
 
-func (s *Server) RunServer() {
+func (s Server) RunServer() {
 	s.Handler.Init()
 	s.Handler.AddHandler("/", s.HealthCheck)
-	s.Handler.AddHandler("/test", s.HTTP2)
+	s.Handler.AddHandler("/http2", s.HTTP2)
 	s.Handler.AddHandler("/health", s.HealthCheck)
-	s.Handler.AddHandler("/tag", s.GetTag)
+	s.Handler.AddHandler("/tags", s.GetTag)
 	s.Handler.RunServer()
-}
-
-func (s *Server) SetProtocol(p Protocol) {
-	s.Handler = p
-}
-
-func (s *Server) SetDatasource(ds *db.DB) {
-	s.Datasource = ds
 }
 
 func (s *Server) HTTP2() string {

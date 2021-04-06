@@ -52,6 +52,11 @@ func (server GRPCServer) HealthCheck() {
 	log.Println(response)
 }
 
+func (server GRPCServer) Init() {
+}
+func (server GRPCServer) AddHandler(string, func() string) {
+}
+
 func gRPCStreamHandler() {
 	conn, err := grpc.Dial(":9000", grpc.WithInsecure())
 	if err != nil {

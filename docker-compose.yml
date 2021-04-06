@@ -5,15 +5,16 @@ services:
         volumes:
             - ./:/src/
             - /home/sh/vimwiki:/vimwiki
+            - /home/sh/m3u8:/video
         working_dir: /src
-        command: gin -a 8080 --all -i run server.go
+        command: gin -a 8080 --all -i run main.go
         environment:
           - REDIS_HOST=redis
           - VIMWIKI=/vimwiki
         ports:
           - 8080:8080
           - 9000:9000
-        depends_on: 
+        depends_on:
           - redis
     redis:
       image: redis:alpine
