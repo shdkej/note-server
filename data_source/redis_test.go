@@ -19,61 +19,55 @@ var _ = Describe("Running Redis", func() {
 	Context("Test ping", func() {
 		It("pong", func() {
 			Expect(pool.Ping()).Should(BeNil())
-		})
-	})
-
-	Context("Test strings", func() {
-		key := "test"
-		value := "value"
-		It("set strings", func() {
-			Expect(pool.Set(key, value)).Should(BeNil())
-		})
-		It("get strings", func() {
-			Expect(pool.Get(key)).Should(Equal("value"))
-		})
-		It("get strings empty", func() {
-			Expect(pool.Get("empty")).Should(BeEmpty())
+			Expect(pool.Hits("test")).NotTo(BeNil())
 		})
 	})
 
 	Context("Test sets", func() {
 		tag := Tag{
-			FileName:    "main.md",
-			FileContent: "0",
-			Tag:         "Good",
-			TagLine:     "Good Enough",
+			FileName: "main.md",
+			Tag:      "Good",
+			TagLine:  "Good Enough",
 		}
 
-		It("set sets", func() {
+		It("set Sets", func() {
 			Expect(pool.SetStruct(tag)).Should(BeNil())
 		})
-		It("get sets", func() {
+		It("get Sets", func() {
 			Expect(pool.GetStruct(tag.Tag)).Should(Equal(tag))
 		})
-		It("get sets empty", func() {
+		It("get empty Sets", func() {
 			Expect(pool.GetStruct("empty")).Should(Equal(Tag{}))
+		})
+		It("delete Sets", func() {
+			Expect(pool.Delete(tag)).Should(BeNil())
 		})
 	})
 
-	/*
-		Context("Test initial content", func() {
-			pool.setInitial()
-			It("initial Dir", func() {
-				Expect(os.Getenv("VIMWIKI")).Should(Equal("/home/sh/vimwiki"))
-			})
-			article, err := pool.getStruct("2020-04-06-WEEK14.md")
-			It("get content1", func() {
-				Expect(article.Filename).Should(Equal("2020-04-06-WEEK14.md"))
-			})
-			It("error check", func() {
-				Expect(err).Should(BeNil())
-			})
-			It("get ##Need Component", func() {
-				Expect(pool.get("##Need Component")).NotTo(BeNil())
-			})
-			It("keys space bar test", func() {
-				Expect(pool.getTagParagraph("Need Component")).NotTo(BeNil())
-			})
+	Context("Test Misc Function", func() {
+		tag := Tag{
+			FileName: "main.md",
+			Tag:      "Good",
+			TagLine:  "Good Enough",
+		}
+		pool.SetStruct(tag)
+		tags, err := pool.GetTagList(tag.Tag)
+		It("get scan body", func() {
+			Expect(tags).NotTo(BeNil())
 		})
-	*/
+		It("check error", func() {
+			Expect(err).Should(BeNil())
+		})
+
+		tagParagraph, err := pool.GetSet(tag.Tag)
+		It("check tag paragraph value", func() {
+			Expect(tagParagraph).NotTo(BeNil())
+		})
+		It("check error", func() {
+			Expect(err).Should(BeNil())
+		})
+		It("delete sets", func() {
+			Expect(pool.Delete(tag)).Should(BeNil())
+		})
+	})
 })

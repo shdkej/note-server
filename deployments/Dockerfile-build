@@ -1,2 +1,8 @@
 FROM golang:1.13
-CMD go run server.go
+ADD data_source /src/data_source
+ADD parsing /src/parsing
+ADD server /src/server
+ADD main.go /src/main.go
+WORKDIR /src
+EXPOSE 8080 9000
+CMD go run main.go

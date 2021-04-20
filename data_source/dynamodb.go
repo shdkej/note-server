@@ -1,14 +1,13 @@
 package data_source
 
 import (
-	"encoding/json"
 	"log"
-	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 )
 
 type Dynamodb struct {
@@ -52,6 +51,14 @@ func (conn *Dynamodb) getTable() error {
 	return nil
 }
 
+func (conn *Dynamodb) Hits(key string) (int64, error) {
+	return 1, nil
+}
+
+func (conn *Dynamodb) Ping() error {
+	return nil
+}
+
 func (conn *Dynamodb) SetStruct(tag Tag) error {
 	av, err := dynamodbattribute.MarshalMap(tag)
 	if err != nil {
@@ -67,11 +74,10 @@ func (conn *Dynamodb) SetStruct(tag Tag) error {
 		log.Fatal(err)
 		return err
 	}
-	log.Println("Succeessfully added : " + tag.Tag)
 	return nil
 }
 
-func (conn *Dynamodb) GetStruct(key string) Tag {
+func (conn *Dynamodb) GetStruct(key string) (Tag, error) {
 	result, err := conn.svc.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(conn.TableName),
 		Key: map[string]*dynamodb.AttributeValue{
@@ -92,7 +98,7 @@ func (conn *Dynamodb) GetStruct(key string) Tag {
 
 	log.Println("Get: ", item.Tag)
 
-	return item
+	return item, nil
 }
 
 func (conn *Dynamodb) Delete(item Tag) error {
@@ -113,41 +119,37 @@ func (conn *Dynamodb) Delete(item Tag) error {
 	return nil
 }
 
-func (conn *Dynamodb) loadData(filename string) error {
-	jsonData, err := os.Open(filename)
-	defer jsonData.Close()
+func (conn *Dynamodb) Scan(key string) (string, error) {
+	filt := expression.Name("").Equal(expression.Value(key))
+	proj := expression.NamesList(expression.Name("Tag"))
+	expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()
 	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
-		return err
+		log.Println(err)
 	}
 
-	var items []Tag
-	err = json.NewDecoder(jsonData).Decode(&items)
-	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
-		return err
+	params := &dynamodb.ScanInput{
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+		FilterExpression:          expr.Filter(),
+		ProjectionExpression:      expr.Projection(),
+		TableName:                 aws.String(conn.TableName),
 	}
 
-	for _, item := range items {
-		info, err := dynamodbattribute.MarshalMap(item)
+	result, err := conn.svc.Scan(params)
+	if err != nil {
+		log.Println(err)
+	}
+
+	items := []Tag{}
+	for _, i := range result.Items {
+		item := Tag{}
+		err = dynamodbattribute.UnmarshalMap(i, &item)
 		if err != nil {
 			log.Fatal(err)
-			return err
 		}
-		input := &dynamodb.PutItemInput{
-			Item:      info,
-			TableName: aws.String(conn.TableName),
-		}
-
-		_, err = conn.svc.PutItem(input)
-		if err != nil {
-			log.Fatal(err)
-			return err
-		}
+		items = append(items, item)
 	}
-	log.Println("Load Json Complete")
+	log.Println(items)
 
-	return nil
+	return result.String(), nil
 }

@@ -16,7 +16,6 @@ spec:
       containers:
       - name: note-server
         image: shdkej/note-server
-        imagePullPolicy: Always
         resources:
           requests:
             cpu: 100m

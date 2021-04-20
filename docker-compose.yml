@@ -4,8 +4,7 @@ services:
         build: ./deployments
         volumes:
             - ./:/src/
-            - /home/sh/vimwiki:/vimwiki
-            - /home/sh/m3u8:/video
+            - /home/sh/wiki-blog:/vimwiki
         working_dir: /src
         command: gin -a 8080 --all -i run main.go
         environment:

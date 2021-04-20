@@ -2,15 +2,8 @@ package server
 
 import (
 	"log"
-	"strings"
-
-	db "github.com/shdkej/note-server/data_source"
+	"net/http"
 )
-
-type Server struct {
-	Handler    Protocol
-	Datasource *db.DB
-}
 
 type Protocol interface {
 	Init()
@@ -18,39 +11,48 @@ type Protocol interface {
 	AddHandler(string, func() string)
 }
 
-func (s Server) RunServer() {
-	s.Handler.Init()
-	s.Handler.AddHandler("/", s.HealthCheck)
-	s.Handler.AddHandler("/http2", s.HTTP2)
-	s.Handler.AddHandler("/health", s.HealthCheck)
-	s.Handler.AddHandler("/tags", s.GetTag)
-	s.Handler.RunServer()
+type Server struct {
+	*router
+	middlewares  []Middleware
+	startHandler HandlerFunc
 }
 
-func (s *Server) HTTP2() string {
-	return "http2"
+func NewServer() *Server {
+	r := &router{make(map[string]map[string]HandlerFunc)}
+	s := &Server{router: r}
+	s.middlewares = []Middleware{
+		logHandler,
+		recoverHandler,
+		staticHandler,
+	}
+	return s
+}
+func (s *Server) Use(middlewares ...Middleware) {
+	s.middlewares = append(s.middlewares, middlewares...)
 }
 
-func (s *Server) GetTag() string {
-	tags, err := s.Datasource.GetAllKey("####")
-	if err != nil {
-		log.Fatal(err)
-	}
-	var taglines string
-	taglines += "<h1>Tags</h1>"
+func (s *Server) Run(addr string) {
+	s.startHandler = s.router.handler()
 
-	for _, tag := range tags {
-		taglines += "<a href='/tag/" +
-			strings.Trim(tag, "# ") + "'>" +
-			tag + "</a><br/><p>" + tag + "</p>"
-	}
-	if err != nil {
-		log.Fatal(err)
+	for i := len(s.middlewares) - 1; i >= 0; i-- {
+		s.startHandler = s.middlewares[i](s.startHandler)
 	}
 
-	return taglines
+	log.Println("running server...")
+	if err := http.ListenAndServe(addr, s); err != nil {
+		panic(err)
+	}
 }
 
-func (s *Server) HealthCheck() string {
-	return `{"alive": true}`
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	c := &Context{
+		Params:         make(map[string]interface{}),
+		ResponseWriter: w,
+		Request:        r,
+	}
+
+	for k, v := range r.URL.Query() {
+		c.Params[k] = v[0]
+	}
+	s.startHandler(c)
 }
