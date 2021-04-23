@@ -19,11 +19,11 @@ var _ = Describe("Test Load Data", func() {
 			Expect(len(taglines)).NotTo(BeZero())
 			Expect(err).Should(BeNil())
 		})
-		It("convert map to Tag", func() {
-			tags, _ := ListToTag(taglines)
-			isTag := func(t interface{}) bool {
+		It("convert map to Note", func() {
+			tags, _ := listToNote(taglines)
+			isNote := func(t interface{}) bool {
 				switch t.(type) {
-				case Tag:
+				case Note:
 					return true
 				default:
 					return false
@@ -31,7 +31,7 @@ var _ = Describe("Test Load Data", func() {
 			}(tags[0])
 			Expect(tags).NotTo(BeNil())
 			Expect(len(tags)).NotTo(BeZero())
-			Expect(isTag).Should(BeTrue())
+			Expect(isNote).Should(BeTrue())
 		})
 	})
 

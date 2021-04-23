@@ -47,7 +47,7 @@ func (c *Redis) Hits(page string) (int64, error) {
 	return hits, nil
 }
 
-func (c *Redis) SetStruct(tag Tag) error {
+func (c *Redis) SetStruct(tag Note) error {
 	const objectPrefix string = "tag:"
 
 	articleM := structs.Map(tag)
@@ -60,7 +60,7 @@ func (c *Redis) SetStruct(tag Tag) error {
 	return nil
 }
 
-func (c *Redis) GetStruct(key string) (Tag, error) {
+func (c *Redis) GetStruct(key string) (Note, error) {
 	const objectPrefix string = "tag:"
 
 	key = objectPrefix + key
@@ -68,10 +68,10 @@ func (c *Redis) GetStruct(key string) (Tag, error) {
 	if err == redis.Nil {
 		fmt.Printf("Article does not exist")
 	} else if err != nil {
-		return Tag{}, err
+		return Note{}, err
 	}
 
-	tag := Tag{}
+	tag := Note{}
 	for key, value := range m {
 		switch key {
 		case "Tag":
@@ -117,6 +117,6 @@ func (c *Redis) GetSet(keyword string) ([]string, error) {
 	return val, err
 }
 
-func (c *Redis) Delete(tag Tag) error {
+func (c *Redis) Delete(tag Note) error {
 	return nil
 }

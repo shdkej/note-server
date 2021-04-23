@@ -1,7 +1,6 @@
 package server
 
 import (
-	"net/http"
 	"strings"
 )
 
@@ -31,28 +30,6 @@ func (r *router) HandleFunc(method, pattern string, h HandlerFunc) {
 	}
 
 	m[pattern] = h
-}
-
-func (r *router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	for pattern, handler := range r.handlers[req.Method] {
-		if ok, params := match(pattern, req.URL.Path); ok {
-			c := Context{
-				Params:         make(map[string]interface{}),
-				ResponseWriter: w,
-				Request:        req,
-			}
-
-			for k, v := range params {
-				c.Params[k] = v
-			}
-
-			handler(&c)
-			return
-		}
-	}
-
-	http.NotFound(w, req)
-	return
 }
 
 func match(pattern, path string) (bool, map[string]string) {

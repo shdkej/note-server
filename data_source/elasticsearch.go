@@ -39,7 +39,7 @@ func (e *Elastic) GetStruct(key string) error {
 	return nil
 }
 
-func (e *Elastic) SetStruct(tag Tag) error {
+func (e *Elastic) SetStruct(tag Note) error {
 	_, err := e.client.Index().
 		Index(e.index).
 		BodyJson(tag).

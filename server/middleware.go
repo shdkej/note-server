@@ -3,6 +3,7 @@ package server
 import (
 	"log"
 	"net/http"
+	"net/url"
 	"path"
 	"strings"
 	"time"
@@ -16,10 +17,18 @@ func logHandler(next HandlerFunc) HandlerFunc {
 
 		next(c)
 
+		elapsed := time.Now().Sub(t)
 		log.Printf("[%s] %q %v\n",
 			c.Request.Method,
 			c.Request.URL.String(),
-			time.Now().Sub(t))
+			elapsed,
+		)
+
+		if elapsed.Milliseconds() > 1 {
+			message := "found note server late response " + c.Request.URL.String()
+			err := SendTelegram(message)
+			log.Printf("%s %s", err, message)
+		}
 	}
 }
 
@@ -86,4 +95,24 @@ func staticHandler(next HandlerFunc) HandlerFunc {
 
 		http.ServeContent(c.ResponseWriter, c.Request, file, fi.ModTime(), f)
 	}
+}
+
+func SendTelegram(message string) error {
+	const BOT_TOKEN = "bot1108419102:AAE_apfPb95EjB07pOe1w4aEmXNflOWvWzU"
+	const CHAT_ID = "433493318"
+
+	address := "https://api.telegram.org/"
+	address += BOT_TOKEN + "/sendmessage?"
+	address += "chat_id=" + CHAT_ID + "&"
+	address += "text=" + url.QueryEscape(message)
+
+	resp, err := http.Get(address)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	return nil
 }

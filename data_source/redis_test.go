@@ -24,7 +24,7 @@ var _ = Describe("Running Redis", func() {
 	})
 
 	Context("Test sets", func() {
-		tag := Tag{
+		tag := Note{
 			FileName: "main.md",
 			Tag:      "Good",
 			TagLine:  "Good Enough",
@@ -37,7 +37,7 @@ var _ = Describe("Running Redis", func() {
 			Expect(pool.GetStruct(tag.Tag)).Should(Equal(tag))
 		})
 		It("get empty Sets", func() {
-			Expect(pool.GetStruct("empty")).Should(Equal(Tag{}))
+			Expect(pool.GetStruct("empty")).Should(Equal(Note{}))
 		})
 		It("delete Sets", func() {
 			Expect(pool.Delete(tag)).Should(BeNil())
@@ -45,7 +45,7 @@ var _ = Describe("Running Redis", func() {
 	})
 
 	Context("Test Misc Function", func() {
-		tag := Tag{
+		tag := Note{
 			FileName: "main.md",
 			Tag:      "Good",
 			TagLine:  "Good Enough",

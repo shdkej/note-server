@@ -11,7 +11,7 @@ type DB struct {
 	Store DataSource
 }
 
-type Tag struct {
+type Note struct {
 	FileName string
 	Tag      string
 	TagLine  string
@@ -22,9 +22,9 @@ type DataSource interface {
 	Init() error
 	Ping() error
 	Hits(string) (int64, error)
-	GetStruct(string) (Tag, error)
-	SetStruct(Tag) error
-	Delete(Tag) error
+	GetStruct(string) (Note, error)
+	SetStruct(Note) error
+	Delete(Note) error
 }
 
 func (v *DB) Init() {
@@ -42,7 +42,7 @@ func (v *DB) Init() {
 		if err != nil {
 			log.Println(err)
 		}
-		tag, err := ListToTag(tags)
+		tag, err := listToNote(tags)
 		if err != nil {
 			log.Println(err)
 		}
@@ -59,17 +59,28 @@ func (v *DB) Hits(s string) int64 {
 	return hits
 }
 
-func (c *DB) GetTag(title string) (Tag, error) {
+func (c *DB) GetTag(title string) (Note, error) {
 	m, err := c.Store.GetStruct(title)
 	if err != nil {
-		return Tag{}, err
+		return Note{}, err
 	}
 	return m, nil
 }
 
-func (v *DB) PutTags(values []Tag) error {
+func (v *DB) PutTag(value Note) error {
+	err := v.Store.SetStruct(value)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (v *DB) PutTags(values []Note) error {
 	for _, tag := range values {
-		v.Store.SetStruct(tag)
+		err := v.Store.SetStruct(tag)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -97,21 +108,21 @@ func (c *DB) GetTagParagraph(tag string) ([]string, error) {
 }
 */
 
-func ListToTag(list map[string][]string) ([]Tag, error) {
-	var items []Tag
+func listToNote(list map[string][]string) ([]Note, error) {
+	var items []Note
 	// "tag" : ["file path", "tagline"]
 	for key, value := range list {
-		var tag Tag
+		var tag Note
 		if value == nil {
 			continue
 		}
 		if len(value) < 2 {
-			tag = Tag{
+			tag = Note{
 				Tag:      key,
 				FileName: value[0],
 			}
 		} else {
-			tag = Tag{
+			tag = Note{
 				FileName: value[0],
 				TagLine:  value[1],
 				Tag:      key,

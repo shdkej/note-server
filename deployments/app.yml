@@ -30,13 +30,13 @@ metadata:
   namespace: default
   labels:
     app: note-server
-    tier: frontend
 spec:
   ports:
   - port: 8080
+    targetPort: 8080
+    protocol: TCP
   selector:
     app: note-server
-    tier: frontend
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway

@@ -9,7 +9,7 @@ var _ = Describe("Running Dynamodb", func() {
 	Context("Test CRUD", func() {
 		conn := Dynamodb{}
 		tableName := "myBlog"
-		tag := Tag{
+		tag := Note{
 			FileName: "main.md",
 			Tag:      "Good",
 			TagLine:  "Good Enough",

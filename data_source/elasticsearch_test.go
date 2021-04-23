@@ -8,7 +8,7 @@ import (
 var _ = Describe("Running Elasticsearch", func() {
 	Context("Test CRUD", func() {
 		c := Elastic{}
-		tag := Tag{
+		tag := Note{
 			FileName: "test.md",
 			Tag:      "## test",
 			TagLine:  "this is file content",

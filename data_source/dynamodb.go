@@ -12,7 +12,7 @@ import (
 
 type Dynamodb struct {
 	svc       *dynamodb.DynamoDB
-	item      []Tag
+	item      []Note
 	TableName string
 }
 
@@ -59,7 +59,7 @@ func (conn *Dynamodb) Ping() error {
 	return nil
 }
 
-func (conn *Dynamodb) SetStruct(tag Tag) error {
+func (conn *Dynamodb) SetStruct(tag Note) error {
 	av, err := dynamodbattribute.MarshalMap(tag)
 	if err != nil {
 		log.Fatal(err)
@@ -77,7 +77,7 @@ func (conn *Dynamodb) SetStruct(tag Tag) error {
 	return nil
 }
 
-func (conn *Dynamodb) GetStruct(key string) (Tag, error) {
+func (conn *Dynamodb) GetStruct(key string) (Note, error) {
 	result, err := conn.svc.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(conn.TableName),
 		Key: map[string]*dynamodb.AttributeValue{
@@ -90,7 +90,7 @@ func (conn *Dynamodb) GetStruct(key string) (Tag, error) {
 		log.Fatal(err)
 	}
 
-	item := Tag{}
+	item := Note{}
 	err = dynamodbattribute.UnmarshalMap(result.Item, &item)
 	if err != nil {
 		log.Fatal(err)
@@ -101,7 +101,7 @@ func (conn *Dynamodb) GetStruct(key string) (Tag, error) {
 	return item, nil
 }
 
-func (conn *Dynamodb) Delete(item Tag) error {
+func (conn *Dynamodb) Delete(item Note) error {
 	input := &dynamodb.DeleteItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"Tag": {
@@ -140,9 +140,9 @@ func (conn *Dynamodb) Scan(key string) (string, error) {
 		log.Println(err)
 	}
 
-	items := []Tag{}
+	items := []Note{}
 	for _, i := range result.Items {
-		item := Tag{}
+		item := Note{}
 		err = dynamodbattribute.UnmarshalMap(i, &item)
 		if err != nil {
 			log.Fatal(err)

@@ -40,6 +40,7 @@ func (s *Server) Run(addr string) {
 
 	log.Println("running server...")
 	if err := http.ListenAndServe(addr, s); err != nil {
+		log.Println("server bump")
 		panic(err)
 	}
 }

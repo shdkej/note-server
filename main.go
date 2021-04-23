@@ -5,7 +5,7 @@ import (
 	"log"
 
 	db "github.com/shdkej/note-server/data_source"
-	"github.com/shdkej/note-server/parsing"
+	grpcserver "github.com/shdkej/note-server/grpc"
 	server "github.com/shdkej/note-server/server"
 )
 
@@ -31,10 +31,15 @@ func main() {
 	c.Init()
 	data := db.DB{Store: c}
 
+	go grpcserver.ListenGRPC(data, ":9000")
 	s := server.NewServer()
 
+	s.HandleFunc("GET", "/", func(c *server.Context) {
+		c.RenderJson("{'health':'ok'}")
+	})
+
 	s.HandleFunc("GET", "/tag", func(c *server.Context) {
-		tags, err := parsing.GetTagAll()
+		tags, err := data.GetTag("##")
 		if err != nil {
 			log.Println(err)
 		}
@@ -51,10 +56,30 @@ func main() {
 		c.RenderJson(t)
 	})
 
+	s.HandleFunc("POST", "/tag/:tag", func(c *server.Context) {
+		// 파라미터를 받고
+		// 메인로직을 부르고
+		// 응답을 보낸다
+		parameter := c.Params["tag"].(string)
+		t := data.PutTag(db.Note{Tag: parameter})
+		c.RenderJson(t)
+	})
+
 	s.HandleFunc("GET", "/hits/:tag", func(c *server.Context) {
 		parameter := c.Params["tag"].(string)
 		t := data.Hits(parameter)
 		c.RenderJson(t)
+	})
+
+	s.HandleFunc("GET", "/grpc", func(c *server.Context) {
+		message := grpcserver.GetFromGRPC("test")
+		log.Println("grpc")
+		c.RenderJson(message)
+	})
+
+	s.HandleFunc("GET", "/grpcstream", func(c *server.Context) {
+		finish := grpcserver.AddHandler("test")
+		c.RenderJson(finish)
 	})
 
 	s.Run(*listen)
