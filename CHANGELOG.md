@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### [0.0.6](https://github.com/shdkej/note-server/compare/v0.0.5...v0.0.6) (2021-04-23)
 
+### [0.0.6](https://github.com/shdkej/note-server/compare/v0.0.5...v0.0.6) (2021-04-23)
+
 ### [0.0.6](https://github.com/shdkej/note-server/compare/v0.0.5...v0.0.6) (2021-04-20)
 
 ### [0.0.6](https://github.com/shdkej/note-server/compare/v0.0.5...v0.0.6) (2021-04-09)
