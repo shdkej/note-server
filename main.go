@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"io/ioutil"
 	"log"
@@ -19,17 +18,6 @@ func main() {
 	flag.Parse()
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 
-	// Redis, Dynamodb, File
-	/*
-		c2 := &db.Dynamodb{}
-
-		c2.Init()
-
-		grpcserver := &server.GRPCServer{}
-		gsrv := server.Server{Handler: grpcserver, Datasource: &data}
-		go gsrv.RunServer()
-	*/
-
 	c := &db.Redis{}
 	data := db.DB{Store: c}
 	data.Init()
@@ -38,21 +26,31 @@ func main() {
 
 	s := server.NewServer()
 
-	s.HandleFunc("GET", "/", func(c *server.Context) {
+	// health check endpoint
+	s.HandleFunc("GET", "/health", func(c *server.Context) {
 		c.RenderJson("{'health':'ok'}")
 	})
 
-	s.HandleFunc("GET", "/tag", func(c *server.Context) {
-		tags, err := data.GetTags()
+	// it can make more various data acceptable
+	s.HandleFunc("GET", "/set/:table", func(c *server.Context) {
+		parameter := c.Params["tag"].(string)
+		data.SetPrefix(parameter)
+		c.RenderJson("{'table change':'ok', 'table':'" + parameter + "'}")
+	})
+
+	// get all list of data
+	s.HandleFunc("GET", "/", func(c *server.Context) {
+		tags, err := data.GetEverything()
 		if err != nil {
 			log.Println(err)
 		}
 		c.RenderJson(tags)
 	})
 
-	s.HandleFunc("GET", "/tag/:tag", func(c *server.Context) {
+	// get one item
+	s.HandleFunc("GET", "/:tag", func(c *server.Context) {
 		parameter := c.Params["tag"].(string)
-		t, err := data.GetTag(parameter)
+		t, err := data.Get(parameter)
 		if err != nil {
 			log.Println(err)
 		}
@@ -60,56 +58,38 @@ func main() {
 		c.RenderJson(t)
 	})
 
-	s.HandleFunc("POST", "/tag/:tag", func(c *server.Context) {
-		// 파라미터를 받고
-		// 메인로직을 부르고
-		// 응답을 보낸다
+	// create one item
+	s.HandleFunc("POST", "/:tag", func(c *server.Context) {
 		parameter := c.Params["tag"].(string)
-		t := data.PutTag(db.Note{Tag: parameter})
+		t := data.Put(db.Note{Tag: parameter})
 		c.RenderJson(t)
 	})
 
-	s.HandleFunc("POST", "/tag/:tag/:value", func(c *server.Context) {
+	// update one item
+	s.HandleFunc("PUT", "/:tag", func(c *server.Context) {
 		parameter := c.Params["tag"].(string)
-		value := c.Params["value"].(string)
-		t := data.PutTagForSearch(parameter, value)
-		c.RenderJson(t)
-	})
-
-	s.HandleFunc("GET", "/hits/:tag", func(c *server.Context) {
-		parameter := c.Params["tag"].(string)
-		t := data.Hits(parameter)
-		c.RenderJson(t)
-	})
-
-	s.HandleFunc("GET", "/dict", func(c *server.Context) {
-		tags, err := data.GetEverything("dict")
+		body := c.Request.Body
+		value, err := ioutil.ReadAll(body)
 		if err != nil {
 			log.Println(err)
 		}
-		c.RenderJson(tags)
-	})
 
-	s.HandleFunc("POST", "/dict", func(c *server.Context) {
-		body, err := ioutil.ReadAll(c.Request.Body)
+		err = data.Update(parameter, string(value))
 		if err != nil {
 			log.Println(err)
 		}
-		note := db.Note{}
-		err = json.Unmarshal(body, &note)
-		t := data.Put("dict", note)
-		c.RenderJson(t)
+		c.RenderJson(err)
 	})
 
-	s.HandleFunc("GET", "/grpc", func(c *server.Context) {
-		message := grpcserver.GetFromGRPC("test")
-		log.Println("grpc")
-		c.RenderJson(message)
-	})
+	// delete one item
+	s.HandleFunc("DELETE", "/:tag", func(c *server.Context) {
+		parameter := c.Params["tag"].(string)
 
-	s.HandleFunc("GET", "/grpcstream", func(c *server.Context) {
-		finish := grpcserver.AddHandler("test")
-		c.RenderJson(finish)
+		err := data.Delete(parameter)
+		if err != nil {
+			log.Println(err)
+		}
+		c.RenderJson(err)
 	})
 
 	s.Run(*listen)

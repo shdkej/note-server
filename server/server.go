@@ -23,7 +23,6 @@ func NewServer() *Server {
 	s.middlewares = []Middleware{
 		logHandler,
 		recoverHandler,
-		staticHandler,
 	}
 	return s
 }

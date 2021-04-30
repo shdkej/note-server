@@ -3,6 +3,7 @@ package main
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"log"
 	"testing"
 )
 
@@ -20,6 +21,7 @@ var _ = Describe("Parser Test", func() {
 			ch := make(chan bool, len(d))
 
 			SendPostRequest(d[0], ch)
+			log.Println(d[0])
 			endCount := ConfirmComplete()
 			Expect(endCount - prevCount).Should(Equal(len(d)))
 		})

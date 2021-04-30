@@ -14,7 +14,7 @@ import (
 
 var (
 	source      = flag.String("src", "/home/sh/workspace/note-reminder", "file path for parsing")
-	destination = flag.String("dest", "http://localhost:8081/search", "database endpoint to push data")
+	destination = flag.String("dest", "http://localhost:8080/", "database endpoint to push data")
 	db          = flag.String("db", "redis", "database to push data")
 	dataType    = flag.String("t", "Note", "data type for json")
 )

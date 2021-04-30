@@ -53,7 +53,7 @@ func (s *tagManagerServer) PutTag(ctx context.Context, note *Note) (*Message, er
 		FileName: note.Filename,
 		TagLine:  note.Tagline,
 	}
-	err := s.datasource.PutTag(n)
+	err := s.datasource.Put(n)
 	if err != nil {
 		log.Fatal(err)
 	}

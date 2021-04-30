@@ -3,7 +3,6 @@ package data_source
 import (
 	"log"
 	"os"
-	"strings"
 
 	"github.com/fatih/structs"
 	"github.com/go-redis/redis"
@@ -18,8 +17,12 @@ func (c *Redis) Init() error {
 	if host == "" {
 		host = "localhost"
 	}
+	port := os.Getenv("REDIS_PORT")
+	if port == "" {
+		port = "6379"
+	}
 	c.redis = redis.NewClient(&redis.Options{
-		Addr:     host + ":6379",
+		Addr:     host + ":" + port,
 		Password: "",
 		DB:       0,
 	})
@@ -40,7 +43,7 @@ func (c *Redis) Ping() error {
 }
 
 func (c *Redis) Hits(page string) (int64, error) {
-	hitstring := page + ":"
+	hitstring := page + ":hits"
 	hits, err := c.redis.Incr(hitstring).Result()
 	if err != nil {
 		log.Println("hutswing")
@@ -60,12 +63,9 @@ func (c *Redis) SetStruct(prefix string, tag Note) error {
 	return nil
 }
 
-func (c *Redis) GetStruct(prefix string, key string) (Note, error) {
+func (c *Redis) GetStruct(key string) (Note, error) {
 	if key == "tag:" || key == "" {
 		return Note{}, nil
-	}
-	if !strings.HasPrefix(key, prefix) {
-		key = prefix + key
 	}
 	m, err := c.redis.HGetAll(key).Result()
 	if err == redis.Nil {
@@ -84,13 +84,17 @@ func (c *Redis) GetStruct(prefix string, key string) (Note, error) {
 			tag.TagLine = value
 		case "FileName":
 			tag.FileName = value
+		case "CreatedAt":
+			tag.CreatedAt = value
+		case "UpdatedAt":
+			tag.UpdatedAt = value
 		}
 	}
 
 	return tag, nil
 }
 
-func (c *Redis) GetTags(prefix string) ([]string, error) {
+func (c *Redis) Scan(prefix string) ([]string, error) {
 	var cursor uint64
 	var keys []string
 
@@ -113,19 +117,6 @@ func (c *Redis) GetTags(prefix string) ([]string, error) {
 	return keys, nil
 }
 
-func (c *Redis) GetSet(keyword string) ([]string, error) {
-	val, err := c.redis.LRange(keyword, 0, 100).Result()
-	if err != nil {
-		return val, err
-	}
-	return val, err
-}
-
-func (c *Redis) Delete(tag Note) error {
-	c.redis.Del(tagPrefix + tag.Tag)
-	return nil
-}
-
 func (c *Redis) Update(key string, field string, value interface{}) error {
 	_, err := c.redis.HSet(key, field, value).Result()
 	if err != nil {
@@ -134,10 +125,7 @@ func (c *Redis) Update(key string, field string, value interface{}) error {
 	return nil
 }
 
-func (c *Redis) AddTag(key string, value string) error {
-	_, err := c.redis.HSet(tagPrefix+key, "tag", value).Result()
-	if err != nil {
-		return err
-	}
+func (c *Redis) Delete(key string) error {
+	c.redis.Del(key)
 	return nil
 }

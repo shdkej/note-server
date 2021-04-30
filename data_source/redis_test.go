@@ -22,18 +22,19 @@ var _ = Describe("Running Redis", func() {
 			Tag:      "Good",
 			TagLine:  "Good Enough",
 		}
+		tagPrefix := "tag:"
 
 		It("set Sets", func() {
 			Expect(pool.SetStruct(tagPrefix, tag)).Should(BeNil())
 		})
 		It("get Sets", func() {
-			Expect(pool.GetStruct(tagPrefix, tag.Tag)).Should(Equal(tag))
+			Expect(pool.GetStruct(tagPrefix + tag.Tag)).Should(Equal(tag))
 		})
 		It("get empty Sets", func() {
-			Expect(pool.GetStruct(tagPrefix, "empty")).Should(Equal(Note{}))
+			Expect(pool.GetStruct("empty")).Should(Equal(Note{}))
 		})
 		It("delete Sets", func() {
-			Expect(pool.Delete(tag)).Should(BeNil())
+			Expect(pool.Delete(tag.Tag)).Should(BeNil())
 		})
 	})
 
@@ -43,24 +44,14 @@ var _ = Describe("Running Redis", func() {
 			Tag:      "Good",
 			TagLine:  "Good Enough",
 		}
+		tagPrefix := "tag:"
 		pool.SetStruct(tagPrefix, tag)
-		tags, err := pool.GetTags(tagPrefix)
+		tags, err := pool.Scan(tagPrefix)
 		It("get scan body", func() {
 			Expect(tags).NotTo(BeNil())
 		})
 		It("check error", func() {
 			Expect(err).Should(BeNil())
-		})
-
-		tagParagraph, err := pool.GetSet(tag.Tag)
-		It("check tag paragraph value", func() {
-			Expect(tagParagraph).NotTo(BeNil())
-		})
-		It("check error", func() {
-			Expect(err).Should(BeNil())
-		})
-		It("delete sets", func() {
-			Expect(pool.Delete(tag)).Should(BeNil())
 		})
 	})
 })
