@@ -38,7 +38,7 @@ func (s *Server) Run(addr string) {
 		s.startHandler = s.middlewares[i](s.startHandler)
 	}
 
-	log.Println("running server...")
+	log.Println("running server...", addr)
 	if err := http.ListenAndServe(addr, s); err != nil {
 		log.Println("server bump")
 		panic(err)
@@ -55,5 +55,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for k, v := range r.URL.Query() {
 		c.Params[k] = v[0]
 	}
+	c.ResponseWriter.Header().Add("Access-Control-Allow-Origin", "*")
+	c.ResponseWriter.Header().Add("Access-Control-Allow-Methods", "*")
+	c.ResponseWriter.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 	s.startHandler(c)
 }

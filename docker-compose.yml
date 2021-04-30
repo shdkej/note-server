@@ -4,7 +4,7 @@ services:
         build: ./deployments
         volumes:
             - ./:/src/
-            - /home/sh/wiki-blog:/vimwiki
+            - /home/sh/wiki-blog/content:/vimwiki
         working_dir: /src
         command: gin -a 8080 --all -i run main.go
         environment:
@@ -19,9 +19,25 @@ services:
       image: redis:alpine
       ports:
         - 6379:6379
+    dict-server:
+        build: ./deployments
+        volumes:
+            - ./:/src/
+        working_dir: /src
+        command: gin -a 8080 -d cmd/dict/ -b gin-dict -i run cmd/dict/main.go
+        ports:
+          - 8081:8080
+        environment:
+          - ELASTICSEARCH_HOST=elasticsearch
+          - INDEX=analyze
+        depends_on:
+          - elasticsearch
     elasticsearch:
       image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
       container_name: elasticsearch
+      volumes:
+          - ./data_source/userdict.txt:/usr/share/elasticsearch/config/userdict.txt
+          - ./data_source/synonyms.txt:/usr/share/elasticsearch/config/synonyms.txt
       ports:
         - 9200:9200
       environment:

@@ -119,8 +119,8 @@ func (conn *Dynamodb) Delete(item Note) error {
 	return nil
 }
 
-func (conn *Dynamodb) Scan(key string) (string, error) {
-	filt := expression.Name("").Equal(expression.Value(key))
+func (conn *Dynamodb) Scan(key string) ([]Note, error) {
+	filt := expression.Name("Tag").Equal(expression.Value(key))
 	proj := expression.NamesList(expression.Name("Tag"))
 	expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()
 	if err != nil {
@@ -149,7 +149,6 @@ func (conn *Dynamodb) Scan(key string) (string, error) {
 		}
 		items = append(items, item)
 	}
-	log.Println(items)
 
-	return result.String(), nil
+	return items, nil
 }

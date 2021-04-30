@@ -14,8 +14,8 @@ type Context struct {
 type HandlerFunc func(*Context)
 
 func (c *Context) RenderJson(v interface{}) {
-	c.ResponseWriter.WriteHeader(http.StatusOK)
 	c.ResponseWriter.Header().Set("Content-Type", "application/json; charset=utf-8")
+	c.ResponseWriter.WriteHeader(http.StatusOK)
 
 	if err := json.NewEncoder(c.ResponseWriter).Encode(v); err != nil {
 		c.RenderErr(http.StatusInternalServerError, err)

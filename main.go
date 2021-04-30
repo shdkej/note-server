@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
+	"io/ioutil"
 	"log"
 
 	db "github.com/shdkej/note-server/data_source"
@@ -15,6 +17,7 @@ var (
 
 func main() {
 	flag.Parse()
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 
 	// Redis, Dynamodb, File
 	/*
@@ -28,10 +31,11 @@ func main() {
 	*/
 
 	c := &db.Redis{}
-	c.Init()
 	data := db.DB{Store: c}
+	data.Init()
 
 	go grpcserver.ListenGRPC(data, ":9000")
+
 	s := server.NewServer()
 
 	s.HandleFunc("GET", "/", func(c *server.Context) {
@@ -39,7 +43,7 @@ func main() {
 	})
 
 	s.HandleFunc("GET", "/tag", func(c *server.Context) {
-		tags, err := data.GetTag("##")
+		tags, err := data.GetTags()
 		if err != nil {
 			log.Println(err)
 		}
@@ -65,9 +69,35 @@ func main() {
 		c.RenderJson(t)
 	})
 
+	s.HandleFunc("POST", "/tag/:tag/:value", func(c *server.Context) {
+		parameter := c.Params["tag"].(string)
+		value := c.Params["value"].(string)
+		t := data.PutTagForSearch(parameter, value)
+		c.RenderJson(t)
+	})
+
 	s.HandleFunc("GET", "/hits/:tag", func(c *server.Context) {
 		parameter := c.Params["tag"].(string)
 		t := data.Hits(parameter)
+		c.RenderJson(t)
+	})
+
+	s.HandleFunc("GET", "/dict", func(c *server.Context) {
+		tags, err := data.GetEverything("dict")
+		if err != nil {
+			log.Println(err)
+		}
+		c.RenderJson(tags)
+	})
+
+	s.HandleFunc("POST", "/dict", func(c *server.Context) {
+		body, err := ioutil.ReadAll(c.Request.Body)
+		if err != nil {
+			log.Println(err)
+		}
+		note := db.Note{}
+		err = json.Unmarshal(body, &note)
+		t := data.Put("dict", note)
 		c.RenderJson(t)
 	})
 

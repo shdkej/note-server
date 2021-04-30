@@ -1,0 +1,23 @@
+FROM golang:1.14 AS builder
+WORKDIR /build
+
+ENV CGO_ENABLED=0
+
+COPY go.mod ./
+RUn go mod download
+
+COPY . ./
+RUN go build -gcflags "all=-N -l" .
+
+RUN go get -u github.com/go-delve/delve/cmd/dlv
+
+FROM alpine:3.10
+WORKDIR /bin
+
+COPY --from=builder /build/note /bin/
+COPY --from=builder /go/bin/dlv /bin/
+
+EXPOSE 8000
+EXPOSE 2345
+ENTRYPOINT ["/bin/dlv", "--listen=:2345", "--headless=true", "--api-version=2",
+           "--accept-multiclient", "exec", "/bin/gin-bin", "--continue"]

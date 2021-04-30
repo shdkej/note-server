@@ -1,8 +1,9 @@
 package data_source
 
 import (
-	"fmt"
+	"log"
 	"os"
+	"strings"
 
 	"github.com/fatih/structs"
 	"github.com/go-redis/redis"
@@ -34,7 +35,7 @@ func (c *Redis) Ping() error {
 		return err
 	}
 
-	fmt.Println(pong, err)
+	log.Println(pong, err)
 	return nil
 }
 
@@ -42,17 +43,16 @@ func (c *Redis) Hits(page string) (int64, error) {
 	hitstring := page + ":"
 	hits, err := c.redis.Incr(hitstring).Result()
 	if err != nil {
+		log.Println("hutswing")
 		return 0, err
 	}
 	return hits, nil
 }
 
-func (c *Redis) SetStruct(tag Note) error {
-	const objectPrefix string = "tag:"
-
+func (c *Redis) SetStruct(prefix string, tag Note) error {
 	articleM := structs.Map(tag)
 
-	err := c.redis.HMSet(objectPrefix, articleM).Err()
+	err := c.redis.HMSet(prefix+tag.Tag, articleM).Err()
 	if err != nil {
 		return err
 	}
@@ -60,14 +60,18 @@ func (c *Redis) SetStruct(tag Note) error {
 	return nil
 }
 
-func (c *Redis) GetStruct(key string) (Note, error) {
-	const objectPrefix string = "tag:"
-
-	key = objectPrefix + key
+func (c *Redis) GetStruct(prefix string, key string) (Note, error) {
+	if key == "tag:" || key == "" {
+		return Note{}, nil
+	}
+	if !strings.HasPrefix(key, prefix) {
+		key = prefix + key
+	}
 	m, err := c.redis.HGetAll(key).Result()
 	if err == redis.Nil {
-		fmt.Printf("Article does not exist")
+		log.Printf("Article does not exist")
 	} else if err != nil {
+		log.Printf("Some Error Occured, %s", key)
 		return Note{}, err
 	}
 
@@ -86,7 +90,7 @@ func (c *Redis) GetStruct(key string) (Note, error) {
 	return tag, nil
 }
 
-func (c *Redis) GetTagList(tag string) ([]string, error) {
+func (c *Redis) GetTags(prefix string) ([]string, error) {
 	var cursor uint64
 	var keys []string
 
@@ -94,7 +98,7 @@ func (c *Redis) GetTagList(tag string) ([]string, error) {
 	for {
 		var err error
 		var t []string
-		t, cursor, err = c.redis.Scan(cursor, tag, 1000).Result()
+		t, cursor, err = c.redis.Scan(cursor, prefix+"*", 1000).Result()
 		if err != nil {
 			return nil, err
 		}
@@ -118,5 +122,22 @@ func (c *Redis) GetSet(keyword string) ([]string, error) {
 }
 
 func (c *Redis) Delete(tag Note) error {
+	c.redis.Del(tagPrefix + tag.Tag)
+	return nil
+}
+
+func (c *Redis) Update(key string, field string, value interface{}) error {
+	_, err := c.redis.HSet(key, field, value).Result()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Redis) AddTag(key string, value string) error {
+	_, err := c.redis.HSet(tagPrefix+key, "tag", value).Result()
+	if err != nil {
+		return err
+	}
 	return nil
 }

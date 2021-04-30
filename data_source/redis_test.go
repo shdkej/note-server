@@ -1,16 +1,9 @@
 package data_source
 
 import (
-	"testing"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
-
-func TestRedis(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Redis Test")
-}
 
 var _ = Describe("Running Redis", func() {
 	pool := Redis{}
@@ -31,13 +24,13 @@ var _ = Describe("Running Redis", func() {
 		}
 
 		It("set Sets", func() {
-			Expect(pool.SetStruct(tag)).Should(BeNil())
+			Expect(pool.SetStruct(tagPrefix, tag)).Should(BeNil())
 		})
 		It("get Sets", func() {
-			Expect(pool.GetStruct(tag.Tag)).Should(Equal(tag))
+			Expect(pool.GetStruct(tagPrefix, tag.Tag)).Should(Equal(tag))
 		})
 		It("get empty Sets", func() {
-			Expect(pool.GetStruct("empty")).Should(Equal(Note{}))
+			Expect(pool.GetStruct(tagPrefix, "empty")).Should(Equal(Note{}))
 		})
 		It("delete Sets", func() {
 			Expect(pool.Delete(tag)).Should(BeNil())
@@ -50,8 +43,8 @@ var _ = Describe("Running Redis", func() {
 			Tag:      "Good",
 			TagLine:  "Good Enough",
 		}
-		pool.SetStruct(tag)
-		tags, err := pool.GetTagList(tag.Tag)
+		pool.SetStruct(tagPrefix, tag)
+		tags, err := pool.GetTags(tagPrefix)
 		It("get scan body", func() {
 			Expect(tags).NotTo(BeNil())
 		})

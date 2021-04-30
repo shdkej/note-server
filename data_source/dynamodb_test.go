@@ -28,7 +28,10 @@ var _ = Describe("Running Dynamodb", func() {
 			Expect(conn.GetStruct(tag.Tag)).Should(Equal(tag))
 		})
 		It("Scan Item", func() {
-			Expect(conn.Scan(tag.Tag)).Should(Equal(tag))
+			result, err := conn.Scan(tag.Tag)
+			Expect(result).ShouldNot(BeZero())
+			Expect(err).Should(BeNil())
+			Expect(result[0]).Should(Equal(tag))
 		})
 		It("Delete Item", func() {
 			Expect(conn.Delete(tag)).Should(BeNil())

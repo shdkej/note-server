@@ -20,7 +20,7 @@ var _ = Describe("Running Elasticsearch", func() {
 			Expect(c.SetStruct(tag)).Should(BeNil())
 		})
 		It("Get", func() {
-			Expect(c.GetStruct(tag.Tag)).Should(BeNil())
+			Expect(c.GetStruct(tag.Tag)).ShouldNot(BeNil())
 		})
 	})
 })

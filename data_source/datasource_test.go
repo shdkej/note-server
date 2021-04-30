@@ -20,7 +20,7 @@ var _ = Describe("Test Load Data", func() {
 			Expect(err).Should(BeNil())
 		})
 		It("convert map to Note", func() {
-			tags, _ := listToNote(taglines)
+			tags, _ := ListToNote(taglines)
 			isNote := func(t interface{}) bool {
 				switch t.(type) {
 				case Note:
@@ -42,7 +42,7 @@ var _ = Describe("Test Load Data", func() {
 			Expect(err).Should(BeNil())
 		})
 		It("Test is exist initial content", func() {
-			value, err := db.GetStruct("#### kubernetes")
+			value, err := db.GetStruct(tagPrefix, "#### kubernetes")
 			Expect(value).NotTo(BeNil())
 			Expect(err).Should(BeNil())
 		})
