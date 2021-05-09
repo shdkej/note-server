@@ -1,0 +1,23 @@
+syntax = "proto3";
+option go_package = "github.com/shdkej/note-server/grpcserver";
+package grpcserver;
+
+message Note {
+    string filename = 1;
+    string tag = 2;
+    string tagline = 3;
+}
+
+message Message {
+    string body = 1;
+}
+
+message GetTagResponse {
+    Note note = 1;
+}
+
+service TagManager {
+    rpc GetTag(Message) returns (GetTagResponse) {}
+    rpc PutTag(Note) returns (Message) {}
+    rpc GetTags(Message) returns (stream Note) {}
+}
