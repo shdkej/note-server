@@ -1,8 +1,0 @@
-done!
-Recommending 5 products similar to "## 4/29 #### vagrant...
--------
-Recommended: "## 3/29" (score:0.1871672683780879)
-Recommended: "##/5/29 " (score:0.1871672683780879)
-Recommended: "## 3/29" (score:0.1871672683780879)
-Recommended: "## 5/10 #### vagrant coreos (score:0.11824877666200245)
-Recommended: "#### kubernetes helm (score:0.06286458153311796)
