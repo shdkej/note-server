@@ -9,11 +9,10 @@ var _ = Describe("Running Dynamodb", func() {
 	Context("Test CRUD", func() {
 		conn := Dynamodb{}
 		tableName := "myBlog"
-		tag := Tag{
-			FileName:    "main.md",
-			FileContent: "0",
-			Tag:         "Good",
-			TagLine:     "Good Enough",
+		tag := Note{
+			FileName: "main.md",
+			Tag:      "Good",
+			TagLine:  "Good Enough",
 		}
 		It("Init", func() {
 			Expect(conn.Init()).Should(BeNil())
@@ -28,11 +27,14 @@ var _ = Describe("Running Dynamodb", func() {
 		It("Get Item", func() {
 			Expect(conn.GetStruct(tag.Tag)).Should(Equal(tag))
 		})
+		It("Scan Item", func() {
+			result, err := conn.Scan(tag.Tag)
+			Expect(result).ShouldNot(BeZero())
+			Expect(err).Should(BeNil())
+			Expect(result[0]).Should(Equal(tag))
+		})
 		It("Delete Item", func() {
 			Expect(conn.Delete(tag)).Should(BeNil())
 		})
-		//It("Load Json", func() {
-		//	Expect(conn.loadData("moviedata.json")).Should(BeNil())
-		//})
 	})
 })
