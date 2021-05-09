@@ -1,27 +1,65 @@
 version: "2"
 services:
-    golang:
-        build: ./
+    note-api:
+        build: ./deployments
         volumes:
             - ./:/src/
-            - /home/sh/vimwiki:/vimwiki
         working_dir: /src
-        command: gin -a 8080 --all -i run server.go
+        command: gin -a 8080 -b gin-note -i run main.go
         environment:
-          - REDIS_HOST=redis
-          - VIMWIKI=/vimwiki
+          - REDIS_HOST=note-redis
+          - REDIS_PORT=6378
+          - TABLE=tag
         ports:
           - 8080:8080
-          - 9000:9000
-        depends_on: 
-          - redis
-    redis:
+        depends_on:
+          - note-redis
+    note-redis:
+      image: redis:alpine
+      command: --port 6378
+      ports:
+        - 6378:6378
+
+    synonym-api:
+        build: ./deployments
+        volumes:
+            - ./:/src/
+        working_dir: /src
+        command: gin -a 8080 --all -i run main.go
+        environment:
+          - REDIS_HOST=synonym-redis
+          - TABLE=synonym
+        ports:
+          - 8081:8080
+        depends_on:
+          - synonym-redis
+    synonym-redis:
       image: redis:alpine
       ports:
         - 6379:6379
+
+    dict-server:
+        build: ./deployments
+        volumes:
+            - ./:/src/
+        working_dir: /src
+        command: gin -a 8080 -d cmd/dict/ -b gin-dict -i run cmd/dict/main.go
+        restart: always
+        ports:
+          - 8082:8080
+        environment:
+          - ELASTICSEARCH_HOST=elasticsearch
+          - INDEX=analyze
+        depends_on:
+          - elasticsearch
     elasticsearch:
-      image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
+      build:
+        context: ./deployments
+        dockerfile: Dockerfile-elasticsearch
       container_name: elasticsearch
+      volumes:
+          - ./elastic/userdict.txt:/usr/share/elasticsearch/config/userdict.txt
+          - ./elastic/synonyms.txt:/usr/share/elasticsearch/config/synonyms.txt
       ports:
         - 9200:9200
       environment:
