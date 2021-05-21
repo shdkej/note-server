@@ -40,7 +40,7 @@ jobs:
 
     - name: Update Pull Request
       uses: actions/github-script@0.9.0
-      if: github.event_name == 'pull_request' && failed()
+      if: github.event_name == 'pull_request' || failed()
       env:
         STDOUT: "go test\n${{ steps.test.outputs.stdout }}"
       with:
