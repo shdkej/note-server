@@ -31,7 +31,7 @@ jobs:
 
     - name: Test
       id: test
-      run: echo ::set-output name=stdout::`go test -v ./...`
+      run: echo ::set-output name=stdout::`go test -v ./... | tee`
 
     - name: Build
       id: build
@@ -46,7 +46,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           const output = `
-          <details><summary>Show Test Result</summary>
+          <details><summary>Show Test Result</summary>\n
           \`\`\`
           ${process.env.STDOUT}\n
           \`\`\`
