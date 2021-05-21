@@ -47,7 +47,7 @@ jobs:
         script: |
           const output = `
           <details><summary>Show Test Result</summary>
-          \`\`\`\n
+          \`\`\`
           ${process.env.STDOUT}\n
           \`\`\`
           </details>`;
