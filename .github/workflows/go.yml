@@ -74,7 +74,7 @@ jobs:
 
       - name: Calc coverage
         run: |
-          go test -v -covermode=count -coverprofile=coverage.out
+          go test -v -covermode=count -coverprofile=coverage.out ./server
 
       - name: Convert coverage to lcov
         uses: jandelgado/gcov2lcov-action@v1.0.5
