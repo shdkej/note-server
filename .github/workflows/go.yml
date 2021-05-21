@@ -31,9 +31,7 @@ jobs:
 
     - name: Test
       id: test
-      run: |
-        pip install markout
-        echo ::set-output name=stdout::`go test -v ./... | markout`
+      run: echo ::set-output name=stdout::`go test -v ./...`
 
     - name: Build
       id: build
@@ -49,7 +47,9 @@ jobs:
         script: |
           const output = `
           <details><summary>Show Test Result</summary>
-          \`\`\`${process.env.STDOUT}\`\`\`
+          \`\`\`\n
+          ${process.env.STDOUT}\n
+          \`\`\`
           </details>`;
 
           github.issues.createComment({
