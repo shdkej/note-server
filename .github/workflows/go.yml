@@ -31,7 +31,7 @@ jobs:
 
     - name: Test
       id: test
-      run: echo ::set-output name=stdout::`go test -v ./...`
+      run: echo ::set-output name=stdout::`go test -v -json ./...`
 
     - name: Build
       id: build
