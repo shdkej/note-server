@@ -31,7 +31,9 @@ jobs:
 
     - name: Test
       id: test
-      run: echo ::set-output name=stdout::`go test -v -json ./...`
+      run: |
+        pip install markout
+        echo ::set-output name=stdout::`go test -v ./... | markout`
 
     - name: Build
       id: build
