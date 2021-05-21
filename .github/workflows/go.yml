@@ -39,14 +39,15 @@ jobs:
 
     - name: Update Pull Request
       uses: actions/github-script@0.9.0
-      if: ${{ failure() }} && github.event_name == 'pull_request'
+      if: always() && github.event_name == 'pull_request'
       env:
-        STDOUT: "go test\n${{ steps.test.outputs.stdout }}"
+        STDOUT: "go test\n${{ steps.test.outputs.stdout }}\n${{ steps.test.outputs.stderr }}"
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           const output = `
           <details><summary>Show Test Result</summary>
+          \`\`\`${process.env.STDOUT}\`\`\`
           \`\`\`${process.env.STDOUT}\`\`\`
           </details>`;
 
