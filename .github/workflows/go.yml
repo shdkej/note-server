@@ -4,7 +4,6 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ master ]
 
 jobs:
 
@@ -30,24 +29,27 @@ jobs:
             dep ensure
         fi
 
-    - name: Build
-      run: go build -v .
-
     - name: Test
       id: test
-      run: go test -v .
+      run: echo ::set-output name=stdout::`go test -v ./...`
+
+    - name: Build
+      id: build
+      run: go build -v ./...
 
     - name: Update Pull Request
       uses: actions/github-script@0.9.0
-      if: github.event_name == 'pull_request'
+      if: always() && github.event_name == 'pull_request'
       env:
         STDOUT: "go test\n${{ steps.test.outputs.stdout }}"
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           const output = `
-          <details><summary>Show Test Result</summary>
-          \`\`\`${process.env.STDOUT}\`\`\`
+          <details><summary>Show Test Result</summary>\n
+          \`\`\`
+          ${process.env.STDOUT}\n
+          \`\`\`
           </details>`;
 
           github.issues.createComment({
@@ -74,7 +76,7 @@ jobs:
 
       - name: Calc coverage
         run: |
-          go test -v -covermode=count -coverprofile=coverage.out
+          go test -v -covermode=count -coverprofile=coverage.out ./server
 
       - name: Convert coverage to lcov
         uses: jandelgado/gcov2lcov-action@v1.0.5
