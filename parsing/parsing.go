@@ -86,52 +86,6 @@ func GetTagByTagline(tagline string) string {
 	return tag[0]
 }
 
-func AppendToDictionary(file string, keyword string, text string) error {
-	f, err := os.OpenFile(file, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
-	defer f.Close()
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
-
-	val, err := ioutil.ReadFile(file)
-	if err != nil {
-		return err
-	}
-
-	ss := strings.Split(string(val), "\n")
-	content := ""
-	isExist := false
-	for _, line := range ss {
-		if strings.HasPrefix(line, keyword) {
-			line = line + "," + text
-			isExist = true
-		}
-		content += line
-	}
-
-	if isExist == false {
-		content += keyword + "," + text
-	}
-
-	err = WriteToFile(file, content)
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
-
-	return nil
-}
-
-func WriteToFile(file, content string) error {
-	err := ioutil.WriteFile(file, []byte(content), 0600)
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
-	return nil
-}
-
 func LoadJson(filename string) ([]interface{}, error) {
 	var items []interface{}
 	jsonData, err := os.Open(filename)
