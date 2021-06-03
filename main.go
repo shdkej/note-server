@@ -15,6 +15,7 @@ var (
 	listen = flag.String("listen", ":8080", "listen address")
 )
 
+// crud api
 func main() {
 	flag.Parse()
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
