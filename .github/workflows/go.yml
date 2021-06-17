@@ -43,7 +43,7 @@ jobs:
       id: test
       run: |
         go test -cover -v ./... > output.txt
-        body=${cat output.txt}
+        body=$(cat output.txt)
 
         body="${body//'%'/'%25'}"
         body="${body//$'\n'/'%0A'}"
