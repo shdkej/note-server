@@ -43,7 +43,14 @@ jobs:
       id: test
       run: |
         #echo ::set-output name=stdout::`go test -v ./...`
-        go test -v ./...
+        go test -cover -v ./... > output.txt
+        body=$(cat output.txt)
+
+        body="${body//'%'/'%25'}"
+        body="${body//$'\n'/'%0A'}"
+        body="${body//$'\r'/'%0D'}"
+
+        echo "::set-output name=stdout::$body"
 
     - name: Build
       if: steps.cache.outputs.cache-hit != 'true'
