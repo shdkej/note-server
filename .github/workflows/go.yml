@@ -42,7 +42,7 @@ jobs:
     - name: Test
       id: test
       run: |
-        go test -cover -v ./... > output.txt
+        go test -cover -v -ginkgo.noColor ./... > output.txt
         body=$(cat output.txt)
         body="${body//'%'/'%25'}"
         body="${body//$'\n'/'%0A'}"
@@ -66,8 +66,8 @@ jobs:
 
           <details><summary>Show Test Result</summary>
 
-          \`\`\`\n
-          ${process.env.RESULT}\n
+          \`\`\`
+          ${process.env.RESULT}
           \`\`\`
 
           </details>`;
