@@ -32,6 +32,7 @@ jobs:
           ${{ runner.os }}-
 
     - name: Get dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
       run: |
         go get -v -t -d ./...
         if [ -f Gopkg.toml ]; then
