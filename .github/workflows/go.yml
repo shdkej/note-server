@@ -2,7 +2,6 @@ name: Go
 
 on:
   pull_request:
-  push:
 
 jobs:
 
@@ -43,7 +42,8 @@ jobs:
     - name: Test
       id: test
       run: |
-        echo ::set-output name=stdout::`go test -v ./...`
+        go test -v ./... -o test.txt
+        echo ::set-output name=stdout::`cat test.txt`
 
     - name: output multiple line
       run: echo
@@ -72,8 +72,7 @@ jobs:
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: |
-              output
+            body: output
           })
 
     - name: Run coverage
