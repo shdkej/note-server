@@ -42,11 +42,7 @@ jobs:
     - name: Test
       id: test
       run: |
-        go test -v ./... > test.txt
-        echo ::set-output name=stdout::`cat test.txt`
-
-    - name: output multiple line
-      run: echo
+        echo ::set-output name=stdout::`go test -v ./...`
 
     - name: Build
       if: steps.cache.outputs.cache-hit != 'true'
