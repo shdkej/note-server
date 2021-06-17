@@ -3,10 +3,11 @@ package grpcserver
 
 import (
 	"context"
-	db "github.com/shdkej/note-server/data_source"
-	"google.golang.org/grpc"
 	"log"
 	"net"
+
+	db "github.com/shdkej/database"
+	"google.golang.org/grpc"
 )
 
 type tagManagerServer struct {
