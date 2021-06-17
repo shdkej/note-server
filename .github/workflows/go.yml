@@ -42,7 +42,12 @@ jobs:
     - name: Test
       id: test
       run: |
-        go test -cover -v ./... > output.txt
+        go test -v ./... > output.txt
+        body=$(cat output.txt)
+        body="${body//'%'/'%25'}"
+        body="${body//$'\n'/'%0A'}"
+        body="${body//$'\r'/'%0D'}"
+        echo "::set-output name=stdout::$body"
 
     - name: Build
       if: steps.cache.outputs.cache-hit != 'true'
