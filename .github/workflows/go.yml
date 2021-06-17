@@ -42,7 +42,7 @@ jobs:
     - name: Test
       id: test
       run: |
-        go test -v ./... -o test.txt
+        go test -v ./... > test.txt
         echo ::set-output name=stdout::`cat test.txt`
 
     - name: output multiple line
