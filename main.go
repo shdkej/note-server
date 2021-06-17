@@ -74,9 +74,9 @@ func main() {
 		if err != nil {
 			log.Println(err)
 		}
-		note := Note{}
+		note := db.Object{}
 		err = json.Unmarshal(body, &note)
-		log.Println("put complete", note.Tag)
+		log.Println("put complete", note.Name)
 		t := data.Create(note)
 		c.RenderJson(t)
 	})
@@ -84,7 +84,7 @@ func main() {
 	// create one item
 	s.HandleFunc("POST", "/:tag", func(c *server.Context) {
 		parameter := c.Params["tag"].(string)
-		t := data.Create(Note{Tag: parameter})
+		t := data.Create(db.Object{Name: parameter})
 		c.RenderJson(t)
 	})
 

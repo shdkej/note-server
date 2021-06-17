@@ -49,12 +49,12 @@ func (s *tagManagerServer) GetTags(message *Message, stream TagManager_GetTagsSe
 }
 
 func (s *tagManagerServer) PutTag(ctx context.Context, note *Note) (*Message, error) {
-	n := db.Note{
-		Tag:      note.Tag,
-		FileName: note.Filename,
-		TagLine:  note.Tagline,
+	n := db.Object{
+		ID:      note.Tag,
+		Name:    note.Filename,
+		Content: note.Tagline,
 	}
-	err := s.datasource.Put(n)
+	err := s.datasource.Create(n)
 	if err != nil {
 		log.Fatal(err)
 	}
