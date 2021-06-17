@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 
-	db "github.com/shdkej/note-server/data_source"
+	db "github.com/shdkej/database"
 	grpcserver "github.com/shdkej/note-server/grpc"
 	server "github.com/shdkej/note-server/server"
 )

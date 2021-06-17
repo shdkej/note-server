@@ -1,4 +1,3 @@
-// crud
 package main
 
 import (
@@ -7,16 +6,23 @@ import (
 	"io/ioutil"
 	"log"
 
-	db "github.com/shdkej/note-server/data_source"
+	db "github.com/shdkej/database"
 	grpcserver "github.com/shdkej/note-server/grpc"
 	server "github.com/shdkej/note-server/server"
 )
+
+type Note struct {
+	FileName  string
+	Tag       string
+	TagLine   string
+	CreatedAt string
+	UpdatedAt string
+}
 
 var (
 	listen = flag.String("listen", ":8080", "listen address")
 )
 
-// crud api
 func main() {
 	flag.Parse()
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
@@ -68,17 +74,17 @@ func main() {
 		if err != nil {
 			log.Println(err)
 		}
-		note := db.Note{}
+		note := Note{}
 		err = json.Unmarshal(body, &note)
 		log.Println("put complete", note.Tag)
-		t := data.Put(note)
+		t := data.Create(note)
 		c.RenderJson(t)
 	})
 
 	// create one item
 	s.HandleFunc("POST", "/:tag", func(c *server.Context) {
 		parameter := c.Params["tag"].(string)
-		t := data.Put(db.Note{Tag: parameter})
+		t := data.Create(Note{Tag: parameter})
 		c.RenderJson(t)
 	})
 
