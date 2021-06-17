@@ -53,15 +53,18 @@ jobs:
       uses: actions/github-script@0.9.0
       if: always() && github.event_name == 'pull_request'
       env:
-        STDOUT: "go test\n${{ steps.test.outputs.stdout }}"
+        RESULT: "go test\n${{ steps.test.outputs.stdout }}"
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const output = `
-          <details><summary>Show Test Result</summary>\n
+          const output = `#### Go Test Result
+
+          <details><summary>Show Test Result</summary>
+
+          \`\`\`\n
+          ${process.env.RESULT}\n
           \`\`\`
-          ${process.env.STDOUT}\n
-          \`\`\`
+
           </details>`;
 
           github.issues.createComment({
@@ -76,8 +79,8 @@ jobs:
     - name: Upload coverage to Codecov
       run: bash <(curl -s https://codecov.io/bash)
 
-    - name: Docker compose Test
-      run: docker-compose up -d
+      #- name: Docker compose Test
+      #run: docker-compose up -d
 
   coverage:
     needs: build
