@@ -15,8 +15,7 @@ func TestLocal(t *testing.T) {
 var _ = Describe("Build Workflows Test", func() {
 	Context("Get a specific workflow", func() {
 		It("get docker build image", func() {
-			d, err := GetSnippet("docker")
-			Expect(d).NotTo(BeNil())
+			_, err := GetSnippet("docker")
 			Expect(err).Should(BeNil())
 		})
 	})
