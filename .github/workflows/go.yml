@@ -41,7 +41,9 @@ jobs:
 
     - name: Test
       id: test
-      run: echo ::set-output name=stdout::`go test -v ./...`
+      run: |
+        echo ::set-output name=stdout::`go test -v ./...`
+
     - name: output multiple line
       run: echo
 
@@ -69,7 +71,8 @@ jobs:
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: output
+            body: |
+              output
           })
 
     - name: Run coverage
