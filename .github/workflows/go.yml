@@ -75,11 +75,6 @@ jobs:
             body: output
           })
 
-    - name: Run coverage
-      run: go test -race -coverprofile=coverage.out -covermode=atomic
-    - name: Upload coverage to Codecov
-      run: bash <(curl -s https://codecov.io/bash)
-
       #- name: Docker compose Test
       #run: docker-compose up -d
 
@@ -103,11 +98,11 @@ jobs:
       - name: Convert coverage to lcov
         uses: jandelgado/gcov2lcov-action@v1.0.5
 
-        #- name: Coveralls
-        #uses: coverallsapp/github-action@master
-        #with:
-        #github-token: ${{ secrets.GITHUB_TOKEN }}
-        #path-to-lcov: coverage.lcov
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: coverage.lcov
 
   versioning:
     needs: coverage
