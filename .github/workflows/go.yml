@@ -2,6 +2,7 @@ name: Go
 
 on:
   pull_request:
+  push:
 
 jobs:
 
@@ -21,6 +22,7 @@ jobs:
 
     - name: Cache go modules
       uses: actions/cache@v2
+      id: cache
       with:
         path: ~/go/pkg/mod
         key: ${{ runner.os }}-build-${{ hashFiles('**/go.sum') }}
@@ -43,9 +45,10 @@ jobs:
     - name: output multiple line
       run: echo
 
-      #- name: Build
-      #   id: build
-      #   run: go build -v ./...
+    - name: Build
+      if: steps.cache.outputs.cache-hit != 'true'
+      id: build
+      run: go build -v ./...
 
     - name: Update Pull Request
       uses: actions/github-script@0.9.0
