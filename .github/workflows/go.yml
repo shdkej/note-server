@@ -2,7 +2,6 @@ name: Go
 
 on:
   pull_request:
-  push:
 
 jobs:
 
@@ -32,6 +31,7 @@ jobs:
           ${{ runner.os }}-
 
     - name: Get dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
       run: |
         go get -v -t -d ./...
         if [ -f Gopkg.toml ]; then
@@ -42,10 +42,12 @@ jobs:
     - name: Test
       id: test
       run: |
-        echo ::set-output name=stdout::`go test -v ./...`
-
-    - name: output multiple line
-      run: echo
+        go test -cover -v ./... -ginkgo.noColor > output.txt
+        body=$(cat output.txt)
+        body="${body//'%'/'%25'}"
+        body="${body//$'\n'/'%0A'}"
+        body="${body//$'\r'/'%0D'}"
+        echo "::set-output name=stdout::$body"
 
     - name: Build
       if: steps.cache.outputs.cache-hit != 'true'
@@ -56,32 +58,29 @@ jobs:
       uses: actions/github-script@0.9.0
       if: always() && github.event_name == 'pull_request'
       env:
-        STDOUT: "go test\n${{ steps.test.outputs.stdout }}"
+        RESULT: "go test\n${{ steps.test.outputs.stdout }}"
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const output = `
-          <details><summary>Show Test Result</summary>\n
+          const output = `#### Go Test Result
+
+          <details><summary>Show Test Result</summary>
+
           \`\`\`
-          ${process.env.STDOUT}\n
+          ${process.env.RESULT}
           \`\`\`
+
           </details>`;
 
           github.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: |
-              output
+            body: output
           })
 
-    - name: Run coverage
-      run: go test -race -coverprofile=coverage.out -covermode=atomic
-    - name: Upload coverage to Codecov
-      run: bash <(curl -s https://codecov.io/bash)
-
-    - name: Docker compose Test
-      run: docker-compose up -d
+      #- name: Docker compose Test
+      #run: docker-compose up -d
 
   coverage:
     needs: build
@@ -98,16 +97,16 @@ jobs:
 
       - name: Calc coverage
         run: |
-          go test -v -covermode=count -coverprofile=coverage.out ./server
+          go test -v -covermode=count -coverprofile=coverage.out ./...
 
       - name: Convert coverage to lcov
         uses: jandelgado/gcov2lcov-action@v1.0.5
 
-        #- name: Coveralls
-        #uses: coverallsapp/github-action@master
-        #with:
-        #github-token: ${{ secrets.GITHUB_TOKEN }}
-        #path-to-lcov: coverage.lcov
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: coverage.lcov
 
   versioning:
     needs: coverage
