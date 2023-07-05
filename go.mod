@@ -10,6 +10,6 @@ require (
 	github.com/onsi/gomega v1.13.0
 	github.com/shdkej/database v0.0.0-20210616064754-a66657173f32
 	github.com/swaggo/swag v1.7.0
-	google.golang.org/grpc v1.32.0
-	google.golang.org/protobuf v1.26.0
+	google.golang.org/grpc v1.53.0
+	google.golang.org/protobuf v1.28.1
 )
